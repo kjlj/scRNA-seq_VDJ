@@ -180,12 +180,12 @@ with(bcr.data, table(dataset))
 
 #saving the Ig data for the datasets
 ## writing tab-delimited files
-write_tsv(bcr.data %>% filter(dataset == "pbmc"), "pbmc_Ig_cellranger_igblast_per-barcode.tsv")
-write_tsv(bcr.data %>% filter(dataset == "tumour"), "tumour_Ig_cellranger_igblast_pre-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "pbmc"), "pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "tumour"), "tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
 write_tsv(bcr.data, "pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
 
-write_tsv(tcr.data %>% filter(dataset == "pbmc"), "pbmc_TR_cellranger_igblast_per-barcode.tsv")
-write_tsv(tcr.data %>% filter(dataset == "tumour"), "tumour_TR_cellranger_igblast_pre-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "pbmc"), "pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "tumour"), "tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
 write_tsv(tcr.data, "pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 
 ##writing R objects
