@@ -402,9 +402,9 @@ alternative tools such as <a href="https://github.com/weizhongli/cdhit">cd-hit</
 some additional coding to wrangle the cd-hit output into a format that
 can be joined to the cellranger + IgBLAST cell barcode level
 information. There is some information available <a href="https://github.com/kjlj/10x-VDJ_post-processing">here</a>.</p>
-<p>The workflow for clone building in R is available <a href="https://kjlj.github.io/scRNA-seq_VDJ/building_b_cell_clones.html">here</a>.
+<p>The workflow for clone building in R is available <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">here</a>.
 This builds upon the Ig data generated from the combining IgBLAST and
-cellranger workflow. The RScript is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/building_b_cell_clones.R">github</a>
+cellranger workflow. The RScript is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/building_b_cell_clones.R">github</a>
 in the <a href="https://github.com/kjlj/scRNA-seq_VDJ">workshop
 respository</a>.</p>
 </div>
@@ -413,7 +413,9 @@ respository</a>.</p>
 <p>If working locally it may be of benefit to set the working directory
 at the start of your R session so that you can use relative file paths,
 this isn’t required when using RStudio on Posit Cloud.</p>
-<pre class="r"><code>setwd(&quot;~/Documents/GitHub/scRNA-seq_VDJ/&quot;)</code></pre>
+<p>Uncomment set working directory function and update the path to the
+location of your choice:</p>
+<pre class="r"><code>#setwd(&quot;~/Documents/GitHub/scRNA-seq_VDJ/&quot;)</code></pre>
 </div>
 <div id="r-packages" class="section level2">
 <h2>R packages</h2>
@@ -491,12 +493,12 @@ theme_x_rotated &lt;- function (base_size = 12) {
 </div>
 <div id="datasets" class="section level2">
 <h2>Datasets</h2>
-<p>Using the Ig dataset that was output from <a href="https://kjlj.github.io/scRNA-seq_VDJ/joining_cellranger_igblast.html">previous
-workflow</a> or the <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/joining_cellranger_igblast.R">joining_cellranger_igblast.R</a>
+<p>Using the Ig dataset that was output from <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html">previous
+workflow</a> or the <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R">joining_cellranger_igblast.R</a>
 script. Loading this from githib repo, but can be loaded locally by
 changing to a file path rather than a URL.</p>
 <pre class="r"><code>#loading the B cell post-processed data
-bcr.data &lt;- read_tsv(&quot;https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv&quot;)</code></pre>
+bcr.data &lt;- read_tsv(&quot;https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv&quot;)</code></pre>
 <pre><code>## Rows: 6626 Columns: 262
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
@@ -948,7 +950,7 @@ cln.size.summary &lt;- bcr.cln.data %&gt;%
 <h2>Outputting datasets</h2>
 <p>Write the bcr data that now includes the clone ID to a tab-delimited
 file:</p>
-<pre class="r"><code>write_tsv(bcr.cln.data, &quot;pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv&quot;)</code></pre>
+<pre class="r"><code>write_tsv(bcr.cln.data, &quot;~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv&quot;)</code></pre>
 </div>
 
 

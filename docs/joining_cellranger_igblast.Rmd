@@ -14,14 +14,15 @@ For each dataset now have the V(D)J data from Cell Ranger (the filtered_contig_a
 
 Combining these files in R to summarise the paired chains for each cell. Running R in RStudio on [Posit cloud](https://posit.cloud/). After logging in, can create a new project and within the project a new RScript (joining_cellranger_igblast.R).
 
-Workflow for combining files is described [here](https://kjlj.github.io/scRNA-seq_VDJ/joining_cellranger_igblast.html). The RScript is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+Workflow for combining files is described [here](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html). The RScript is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Working locally versus working on Posit Cloud
 
 If working locally it may be of benefit to set the working directory at the start of your R session so that you can use relative file paths, this isn't required when using RStudio on Posit Cloud.
 
+Uncomment set working directory function and update the path to the location of your choice:
 ```{r set_working_dir}
-setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
+#setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
 ```
 
 ## R packages
@@ -285,15 +286,15 @@ bcr.data %>% glimpse()
 Saving the datasets in tab-delimited and RDS formats:
 ```{r output_datasets}
 ## writing tab-delimited files
-write_tsv(bcr.data %>% filter(dataset == "pbmc"), "data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
-write_tsv(bcr.data %>% filter(dataset == "tumour"), "data/tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
-write_tsv(bcr.data, "data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
+write_tsv(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
 
-write_tsv(tcr.data %>% filter(dataset == "pbmc"), "data/pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
-write_tsv(tcr.data %>% filter(dataset == "tumour"), "data/tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
-write_tsv(tcr.data, "data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
+write_tsv(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 
 ##writing R objects
-saveRDS(bcr.data, "data/bcr_data.Rds")
-saveRDS(tcr.data, "data/tcr_data.Rds")
+saveRDS(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/bcr_data.Rds")
+saveRDS(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/tcr_data.Rds")
 ```

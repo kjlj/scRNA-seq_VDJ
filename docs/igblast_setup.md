@@ -187,3 +187,5 @@ open -a TextEdit imgt_tr_c_human.fa
 #convert the FASTA to a blastdb
 ../bin/makeblastdb -parse_seqids -dbtype nucl -in imgt_tr_c_human.fa
 ```
+
+[Return to main page.](../README.md)

@@ -33,3 +33,5 @@ curl -O https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10
 ```
 
 Alternatively, can also obtain the files direct from the 10x website; [PBMCs](https://www.10xgenomics.com/resources/datasets/human-pbmc-from-a-healthy-donor-10-k-cells-v-2-2-standard-5-0-0) and [tumour](https://www.10xgenomics.com/resources/datasets/melanoma-tumor-derived-cells-v-2-2-standard-4-0-0). For each dataset need to grab the filtered_contig.fasta files for the T and B cell assays.
+
+[Return to main page.](../README.md)

@@ -29,8 +29,9 @@ The workflow for clone building in R is available [here](https://kjlj.github.io/
 
 If working locally it may be of benefit to set the working directory at the start of your R session so that you can use relative file paths, this isn't required when using RStudio on Posit Cloud.
 
+Uncomment set working directory function and update the path to the location of your choice:
 ```{r set_working_dir}
-setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
+#setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
 ```
 
 ## R packages
@@ -303,5 +304,5 @@ cln.size.summary
 
 Write the bcr data that now includes the clone ID to a tab-delimited file:
 ```{r output_data}
-write_tsv(bcr.cln.data, "pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
+write_tsv(bcr.cln.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
 ```

@@ -67,7 +67,7 @@ export IGDATA=~/data/apps/ncbi-igblast-1.21.0/
 
 
 #for the tumour sample
-## nabivigate to the dorectory
+## navigate to the directory
 cd ~/data/scRNA-seq_workshop/tumour/
 ## running IgBLAST with AIRR-C tab-delim output
 ~/data/apps/ncbi-igblast-1.21.0/bin/igblastn \
@@ -82,3 +82,5 @@ cd ~/data/scRNA-seq_workshop/tumour/
     -out sc5p_v2_hs_melanoma_10k_t_filtered_contig.tr.igblast.tsv
 
 ```
+
+[Return to main page.](../README.md)
