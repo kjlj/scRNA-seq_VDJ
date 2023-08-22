@@ -1,50 +1,10 @@
 # scRNA-seq workshop
 
-## datasets
+## IgBLAST post-processing
 
-Using two datasets as part of the workshop:
-```
-cd ~/data/
-mkdir scRNA-seq_workshop/
-cd scRNA-seq_workshop/
-mkdir pbmcs/
-mkdir tumour/
+In the interest of time, we will not undertake the IgBLAST post-processing during this sessions. Rather we will start with datasets that have already been processed. All steps for generating the datasets that we will be working with are documented.
 
-#PBMC dataset from [https://www.10xgenomics.com/resources/datasets/human-pbmc-from-a-healthy-donor-10-k-cells-v-2-2-standard-5-0-0]
-cd ~/data/scRNA-seq_workshop/pbmcs/
-## Ig
-wget https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig_annotations.csv 
-wget https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig.fasta
-
-## TR
-wget https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig_annotations.csv
-wget https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig.fasta
-
-#or, using curl rather than wget
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig_annotations.csv 
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig.fasta
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig_annotations.csv
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig.fasta
-
-#tumor dataset from [https://www.10xgenomics.com/resources/datasets/melanoma-tumor-derived-cells-v-2-2-standard-4-0-0]
-cd ~/data/scRNA-seq_workshop/tumour/
-## Ig
-wget https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_b_filtered_contig_annotations.csv
-wget https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_b_filtered_contig.fasta
-
-## TR
-wget https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_t_filtered_contig_annotations.csv
-wget https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_t_filtered_contig.fasta
-
-#or, using curl rather than wget
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_b_filtered_contig_annotations.csv
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_b_filtered_contig.fasta
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_t_filtered_contig_annotations.csv
-#curl -O https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_t_filtered_contig.fasta
-
-```
-
-Alternatively, can also obtain the files direct from the 10x website; [PBMCs](https://www.10xgenomics.com/resources/datasets/human-pbmc-from-a-healthy-donor-10-k-cells-v-2-2-standard-5-0-0) and [tumour](https://www.10xgenomics.com/resources/datasets/melanoma-tumor-derived-cells-v-2-2-standard-4-0-0). For each dataset need to grab the filtered_contig_annotations.csv and the filtered_contig.fasta files for the T and B cell assays.
+Step one - [obtaining datasets from 10x genomics](datasets.md)
 
 ## post-processing
 
