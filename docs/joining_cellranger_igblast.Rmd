@@ -1,6 +1,6 @@
 ---
 title: "Joining Cell Ranger and IgBLAST VDJ outputs"
-date: "2023-08-21"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -10,9 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-For each dataset now have the V(D)J data from Cell Ranger (the filtered_contig_annotations.csv files) and IgBLAST (the igblast.tsv files). The Cell Ranger files can be accessed directly from their website and details for generated the IgBLAST outputs can be found at <insert link to page on github>.
+For each dataset now have the V(D)J data from Cell Ranger (the filtered_contig_annotations.csv files) and IgBLAST (the igblast.tsv files). 
 
-Combining these files in R to summarise the paired chains for each cell. Running R in RStudio on Posit cloud <https://posit.cloud/>. After logging in, can create a new project and within the project a new RScript (joining_cellranger_igblast.R).
+Combining these files in R to summarise the paired chains for each cell. Running R in RStudio on [Posit cloud](https://posit.cloud/). After logging in, can create a new project and within the project a new RScript (joining_cellranger_igblast.R).
+
+Workflow for combining files is described [here](https://kjlj.github.io/scRNA-seq_VDJ/joining_cellranger_igblast.html). The RScript is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Working locally versus working on Posit Cloud
 
@@ -24,7 +26,7 @@ setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
 
 ## R packages
 
-The tidyverse collection of R packages <https://www.tidyverse.org/> will be used to manipulate the datasets. To install this package (if it is not already available) and then load:
+The [tidyverse collection](https://www.tidyverse.org/) of R packages will be used to manipulate the datasets. To install this package (if it is not already available) and then load:
 ```{r install_packages}
 #check if the package is already installed, if not, install it
 if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
@@ -44,11 +46,11 @@ Loading the post-processed IgBLAST datasets from github repo for the B and T cel
 ```{r loading_datasets}
 
 ### PBMC, loading the Ig and TR data
-pbmc.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/pbmcs/sc5p_v2_hs_PBMC_10k_b_filtered_contig.ig.igblast.tsv")
-pbmc.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/pbmcs/sc5p_v2_hs_PBMC_10k_t_filtered_contig.tr.igblast.tsv")
+pbmc.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_b_filtered_contig.ig.igblast.tsv")
+pbmc.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_t_filtered_contig.tr.igblast.tsv")
 ### tumour, loading the Ig and TR data
-tumour.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/tumour/sc5p_v2_hs_melanoma_10k_b_filtered_contig.ig.igblast.tsv")
-tumour.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/tumour/sc5p_v2_hs_melanoma_10k_t_filtered_contig.tr.igblast.tsv")
+tumour.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_b_filtered_contig.ig.igblast.tsv")
+tumour.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_t_filtered_contig.tr.igblast.tsv")
 
 #loading the cell ranger contig annotations
 ### PBMCs
@@ -283,15 +285,15 @@ bcr.data %>% glimpse()
 Saving the datasets in tab-delimited and RDS formats:
 ```{r output_datasets}
 ## writing tab-delimited files
-write_tsv(bcr.data %>% filter(dataset == "pbmc"), "pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
-write_tsv(bcr.data %>% filter(dataset == "tumour"), "tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
-write_tsv(bcr.data, "pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "pbmc"), "data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
+write_tsv(bcr.data %>% filter(dataset == "tumour"), "data/tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
+write_tsv(bcr.data, "data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
 
-write_tsv(tcr.data %>% filter(dataset == "pbmc"), "pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
-write_tsv(tcr.data %>% filter(dataset == "tumour"), "tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
-write_tsv(tcr.data, "pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "pbmc"), "data/pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
+write_tsv(tcr.data %>% filter(dataset == "tumour"), "data/tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
+write_tsv(tcr.data, "data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 
 ##writing R objects
-saveRDS(bcr.data, "bcr_data.Rds")
-saveRDS(tcr.data, "tcr_data.Rds")
+saveRDS(bcr.data, "data/bcr_data.Rds")
+saveRDS(tcr.data, "data/tcr_data.Rds")
 ```

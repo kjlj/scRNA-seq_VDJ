@@ -1,7 +1,7 @@
 ---
 title: "Building Ig clones"
-date: "2023-08-22"
 output: html_document
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
@@ -10,15 +10,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-Clustering of the Ig sequences is intended to identify groups of cells that carry sequences that are derived from the same original progentitor B cell. These cells will carry heavy and light chains with similar nucleotide sequences that have diverged due to the accumulation of point mutations. Clustering must be undertaken for each individual as a clonal lineage can only exist within a single individual. Similar Igs from different individuals are 'convergent' antibodies likely responding to the same antigen rather than 'divergent' members of the same clone. The same type of clustering can be used to explore convergence (aka public clones) in antibody responses but this is in addition to the clonal lineages.
+For the T cells the clonotype labels have already been created by joining the V, J and CDR3AA sequence. Note that this uses the IMGT CDR3 which excludes the 104-Cys and 118-P/W, many reported CDR3 incorporate these residues. To get an equivalent 'cdr3' can use the junction and junction_aa columns reported by IgBLAST. These will include the anchor residues.
+
+As the B cell chains undergo somatic hypermutation (SHM) need to use a method for defining clonal groups that permits grouping of similar but not exact sequences.
+
+Clustering of the Ig sequences is intended to identify groups of cells that carry sequences that are derived from the same original progenitor B cell. These cells will carry heavy and light chains with similar nucleotide sequences that have diverged due to the accumulation of point mutations. Clustering must be undertaken for each individual as a clonal lineage can only exist within a single individual. Similar Igs from different individuals are 'convergent' antibodies likely responding to the same antigen rather than 'divergent' members of the same clone. The same type of clustering can be used to explore convergence (aka public clones) in antibody responses but this is in addition to the clonal lineages.
 
 In the example datasets the pbmc and tumour samples are from different individuals so clones will be built separately. If your 10x dataset includes multiplexed samples you must split the B cell V(D)J data before building clones. 
 
 Generally, hierarchical clustering is used on the CDR3 nucleotides sequences to group sequences at a specific threshold. First, the sequences are binned by V, J and CDR3 length as any clone will share these three features. The process within each bin then involves seeding the first cluster with the first sequence, then the next sequence is compared to whether or not it is within an identity threshold, if it is then it is added to the cluster, if not, it becomes the first member of a new cluster. This process is repeated until all sequences are assigned to clusters. Generally a centroid approach is taken, this means that adding a new sequence to a cluster doesn't increase average distance between cluster members beyond a threshold. This aims to prevent 'daisy-chaining', where a sequence may be within the threshold of a single member of a cluster but is increasing distance from other members.
 
-An excellent resource for post-processing of 10x data including building clonal relationships can be found at <https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html>. This approach can be undertaken in R, but can also export data and use alternative tools such as cd-hit <https://github.com/weizhongli/cdhit>.
+An excellent resource for post-processing of 10x data including building clonal relationships can be found at [https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). This approach can be undertaken in R, but can also export data and use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) but this requires some additional coding to wrangle the cd-hit output into a format that can be joined to the cellranger + IgBLAST cell barcode level information. There is some information available [here](https://github.com/kjlj/10x-VDJ_post-processing).
 
-This workflow assumes that input files are Ig summaries for each cell barcode for cellranger + IgBLAST that were generated from workflow described at <joining_cellranger_igblast.html>.
+The workflow for clone building in R is available [here](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html). This builds upon the Ig data generated from the combining IgBLAST and cellranger workflow. The RScript is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/building_b_cell_clones.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+
 
 ## Working locally versus working on Posit Cloud
 
@@ -30,7 +35,7 @@ setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
 
 ## R packages
 
-The tidyverse collection of R packages <https://www.tidyverse.org/> will be used to manipulate the datasets. To install this package (if it is not already available) and then load:
+The [tidyverse collection](https://www.tidyverse.org/) of R packages will be used to manipulate the datasets. To install this package (if it is not already available) and then load:
 ```{r install_packages}
 #check if the package is already installed, if not, install it
 if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
@@ -43,7 +48,7 @@ if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
 library(tidyverse)
 ```
 
-To undertake the clone clustering will use two packages from the Immcantation framework <https://immcantation.readthedocs.io/en/stable/>; SCOPer <https://scoper.readthedocs.io/en/stable/> and SHazaM <https://shazam.readthedocs.io/en/stable/>.
+To undertake the clone clustering will use two packages from the [Immcantation framework](https://immcantation.readthedocs.io/en/stable/); [SCOPer](https://scoper.readthedocs.io/en/stable/) and [SHazaM](https://shazam.readthedocs.io/en/stable/).
 ```{r install_packages2}
 #check if the package is already installed, if not, install it
 if (sum(grepl("scoper", rownames(installed.packages()))) > 0) {
@@ -90,10 +95,10 @@ theme_x_rotated <- function (base_size = 12) {
 
 ## Datasets
 
-Using the Ig dataset that was output from <joining_cell_ranger_igblast.html>. Loading this from githib repo, but can be loaded locally by changing to a file path rather than a URL.
+Using the Ig dataset that was output from [previous workflow](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html) or the [joining_cellranger_igblast.R](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) script. Loading this from githib repo, but can be loaded locally by changing to a file path rather than a URL.
 ```{r loading_datasets}
 #loading the B cell post-processed data
-bcr.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
+bcr.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
 
 table(bcr.data$dataset)
 ```

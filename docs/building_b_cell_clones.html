@@ -357,9 +357,18 @@ display: none;
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
+<p>For the T cells the clonotype labels have already been created by
+joining the V, J and CDR3AA sequence. Note that this uses the IMGT CDR3
+which excludes the 104-Cys and 118-P/W, many reported CDR3 incorporate
+these residues. To get an equivalent ‘cdr3’ can use the junction and
+junction_aa columns reported by IgBLAST. These will include the anchor
+residues.</p>
+<p>As the B cell chains undergo somatic hypermutation (SHM) need to use
+a method for defining clonal groups that permits grouping of similar but
+not exact sequences.</p>
 <p>Clustering of the Ig sequences is intended to identify groups of
 cells that carry sequences that are derived from the same original
-progentitor B cell. These cells will carry heavy and light chains with
+progenitor B cell. These cells will carry heavy and light chains with
 similar nucleotide sequences that have diverged due to the accumulation
 of point mutations. Clustering must be undertaken for each individual as
 a clonal lineage can only exist within a single individual. Similar Igs
@@ -387,12 +396,17 @@ between cluster members beyond a threshold. This aims to prevent
 single member of a cluster but is increasing distance from other
 members.</p>
 <p>An excellent resource for post-processing of 10x data including
-building clonal relationships can be found at <a href="https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html" class="uri">https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html</a>.
+building clonal relationships can be found at <a href="https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html">https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html</a>.
 This approach can be undertaken in R, but can also export data and use
-alternative tools such as cd-hit <a href="https://github.com/weizhongli/cdhit" class="uri">https://github.com/weizhongli/cdhit</a>.</p>
-<p>This workflow assumes that input files are Ig summaries for each cell
-barcode for cellranger + IgBLAST that were generated from workflow
-described at &lt;joining_cellranger_igblast.html&gt;.</p>
+alternative tools such as <a href="https://github.com/weizhongli/cdhit">cd-hit</a> but this requires
+some additional coding to wrangle the cd-hit output into a format that
+can be joined to the cellranger + IgBLAST cell barcode level
+information. There is some information available <a href="https://github.com/kjlj/10x-VDJ_post-processing">here</a>.</p>
+<p>The workflow for clone building in R is available <a href="https://kjlj.github.io/scRNA-seq_VDJ/building_b_cell_clones.html">here</a>.
+This builds upon the Ig data generated from the combining IgBLAST and
+cellranger workflow. The RScript is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/building_b_cell_clones.R">github</a>
+in the <a href="https://github.com/kjlj/scRNA-seq_VDJ">workshop
+respository</a>.</p>
 </div>
 <div id="working-locally-versus-working-on-posit-cloud" class="section level2">
 <h2>Working locally versus working on Posit Cloud</h2>
@@ -403,9 +417,9 @@ this isn’t required when using RStudio on Posit Cloud.</p>
 </div>
 <div id="r-packages" class="section level2">
 <h2>R packages</h2>
-<p>The tidyverse collection of R packages <a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a> will be used to manipulate
-the datasets. To install this package (if it is not already available)
-and then load:</p>
+<p>The <a href="https://www.tidyverse.org/">tidyverse collection</a> of
+R packages will be used to manipulate the datasets. To install this
+package (if it is not already available) and then load:</p>
 <pre class="r"><code>#check if the package is already installed, if not, install it
 if (sum(grepl(&quot;tidyverse&quot;, rownames(installed.packages()))) &gt; 0) {
   print(&quot;tidyverse is already installed&quot;)
@@ -425,9 +439,8 @@ library(tidyverse)</code></pre>
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
 ## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<p>To undertake the clone clustering will use two packages from the
-Immcantation framework <a href="https://immcantation.readthedocs.io/en/stable/" class="uri">https://immcantation.readthedocs.io/en/stable/</a>; SCOPer
-<a href="https://scoper.readthedocs.io/en/stable/" class="uri">https://scoper.readthedocs.io/en/stable/</a> and SHazaM <a href="https://shazam.readthedocs.io/en/stable/" class="uri">https://shazam.readthedocs.io/en/stable/</a>.</p>
+<p>To undertake the clone clustering will use two packages from the <a href="https://immcantation.readthedocs.io/en/stable/">Immcantation
+framework</a>; <a href="https://scoper.readthedocs.io/en/stable/">SCOPer</a> and <a href="https://shazam.readthedocs.io/en/stable/">SHazaM</a>.</p>
 <pre class="r"><code>#check if the package is already installed, if not, install it
 if (sum(grepl(&quot;scoper&quot;, rownames(installed.packages()))) &gt; 0) {
   print(&quot;SCOPer is already installed&quot;)
@@ -478,10 +491,10 @@ theme_x_rotated &lt;- function (base_size = 12) {
 </div>
 <div id="datasets" class="section level2">
 <h2>Datasets</h2>
-<p>Using the Ig dataset that was output from
-&lt;joining_cell_ranger_igblast.html&gt;. Loading this from githib repo,
-but can be loaded locally by changing to a file path rather than a
-URL.</p>
+<p>Using the Ig dataset that was output from <a href="https://kjlj.github.io/scRNA-seq_VDJ/joining_cellranger_igblast.html">previous
+workflow</a> or the <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/joining_cellranger_igblast.R">joining_cellranger_igblast.R</a>
+script. Loading this from githib repo, but can be loaded locally by
+changing to a file path rather than a URL.</p>
 <pre class="r"><code>#loading the B cell post-processed data
 bcr.data &lt;- read_tsv(&quot;https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv&quot;)</code></pre>
 <pre><code>## Rows: 6626 Columns: 262
