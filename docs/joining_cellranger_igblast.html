@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-22" />
+<meta name="date" content="2023-08-24" />
 
 <title>Joining Cell Ranger and IgBLAST VDJ outputs</title>
 
@@ -351,7 +351,7 @@ display: none;
 
 <h1 class="title toc-ignore">Joining Cell Ranger and IgBLAST VDJ
 outputs</h1>
-<h4 class="date">2023-08-22</h4>
+<h4 class="date">2023-08-24</h4>
 
 </div>
 
@@ -396,9 +396,9 @@ library(tidyverse)</code></pre>
 <pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ## ✔ dplyr     1.1.2     ✔ readr     2.1.4
 ## ✔ forcats   1.0.0     ✔ stringr   1.5.0
-## ✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+## ✔ ggplot2   3.4.3     ✔ tibble    3.2.1
 ## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
-## ✔ purrr     1.0.1     
+## ✔ purrr     1.0.2     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()
@@ -1673,6 +1673,11 @@ write_tsv(tcr.data, &quot;~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_TR_c
 ##writing R objects
 saveRDS(bcr.data, &quot;~/Documents/GitHub/scRNA-seq_VDJ/data/bcr_data.Rds&quot;)
 saveRDS(tcr.data, &quot;~/Documents/GitHub/scRNA-seq_VDJ/data/tcr_data.Rds&quot;)</code></pre>
+</div>
+<div id="next-step" class="section level2">
+<h2>Next step</h2>
+<p>Now move to <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">building
+clones for the Ig data</a>.</p>
 </div>
 
 
