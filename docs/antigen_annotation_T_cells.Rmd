@@ -1,0 +1,141 @@
+---
+title: "Annotating TCRs for Antigen Specificity"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+Previously generated a dataset of TCR beta chain (TRB) clonotypes of known antigen/epitope specificity that were collected from two resources; SARS-CoV-2 from [immuneCODE]() and various antigens from [VDJdb](). These resources were parsed and wrangled into a format that will merge with the 10x T cell data in the [generating_Ag_reference_for_TRB.R]() script which is described [here]().
+ 
+To annotate the clonotypes with antigen specificity we will rely of exact matches between the clonotype labels between the datasets; so using V + J + CDR3AA sequence. It is not uncommon to used just the CDR3 or junction AA sequence as an alternative 'complete' clonotype matching.
+
+## Setting up R session
+
+Using two packages; the tidyverse collection for the data manipulation and ggsci for colour palettes.
+
+```{r packages}
+
+#loading R packages
+#tidyverse packages for data manipulation and plotting
+#check if the package is already installed, if not, install it
+if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
+  print("tidyverse is already installed")
+} else {
+  install.packages("tidyverse")
+}
+#loading R packages
+library(tidyverse)
+
+#ggsci for colour scales for scientific journals
+#check if the package is already installed, if not, install it
+if (sum(grepl("ggsci", rownames(installed.packages()))) > 0) {
+  print("ggsci is already installed")
+} else {
+  install.packages("ggsci")
+}
+
+library(ggsci)
+```
+
+
+## Themes for ggplot2
+
+Adding some custom ggplot2 themes for plotting:
+```{r ggplot_themes}
+##themes for plots
+theme_custom <- function (base_size = 12) { 
+  theme_bw(base_size=base_size) %+replace% 
+    theme(panel.grid = element_blank(),
+          panel.border = element_blank(),
+          axis.line = element_line(colour="black"),
+          axis.text.x = element_text(colour="black", size=base_size),
+          axis.text.y = element_text(colour="black", size = base_size, hjust = 1),
+          axis.title = element_text(colour="black", face="bold", size = base_size),
+          strip.background = element_blank(),
+          strip.text = element_text(colour="black", face="bold", size=base_size),
+          legend.text = element_text(colour="black", size=base_size)
+    )
+}
+
+theme_x_rotated <- function (base_size = 12) { 
+  theme_custom(base_size=base_size) %+replace% 
+    theme(axis.text.x = element_text(colour="black", angle = 90, hjust = 1, vjust = 0.5, size=base_size))
+}
+```
+
+## Loading datasets
+
+There are two datasets to load. The seurat data and the antigen annotated TRB clonotypes. In the first instance, to save on memory, loading the seurat metadata + UMAP coords data only from the tab-delimited file rather than the complete Suerat objects.
+```{r loading_datasets}
+# seurat dump that includes the UMAP coords & meta with VDJ
+seurat.data <- read_tsv("~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_seruat_data.tsv")
+
+## annotated TCRs
+trb.ags.data <- read_tsv("~/Documents/GitHub/scRNA-seq_VDJ/tcr_ag_refs/trb_antigens.tsv")
+```
+
+TODO - add URL alternatives for loading from dropbox/github
+
+## Annotating the TRB clonotypes
+
+Given that the antigen specific TCRs are bias towards TRB chains, annotation is using TRB only. Currently, the TCR clonotype for the single cell data is formatted as a paired clonotype label that combines the TRB:TRA. To join the single cell data with the antigen data, first extract the TRB clonotype from the paired_clonotype and then join with the antigen data using a left_join. Note that the antigen data was already collasped so that each unique TRB is listed only once with the epitopes/antigens/source appended in comma delimited lists. This is necessary to ensure a one-to-one or many-to-one relationship when doing the left_join. If there are multiple matches in the antigen data (ie, one-to-many or many-to-many) the entries in the seurat.data will become duplicated for each match and the data will no longer be one entry for cell barcode.
+
+```{r annotating_ag_specificity}
+#we are focussing on TRB chain so will be joining the TRB clonotype from 10x with the TRB clonotype from the Ags
+seurat.data <- seurat.data %>%
+  mutate(trb_clonotype = ifelse(grepl("TRBV", paired_clonotype), 
+                                str_replace(paired_clonotype, ":.+$", ""), 
+                                NA_character_)) %>%
+  left_join(trb.ags.data, by = c("trb_clonotype" = "clonotype")) %>%
+  mutate(tcr_antigen_class = case_when(is.na(antigen) ~ "none",
+                                       grepl(",", antigen) ~ "multiple ags",
+                                       TRUE ~ paste0(antigen)))
+```
+
+Summarise the number of T cells within the dataset that were able to be annotated:
+```{r annotation_summary}
+#summarise the number of T cells in the dataset that we annotated for Ag specificity
+ag.summary <- seurat.data %>%
+  filter(vdj_cell_type == "T") %>%
+  group_by(dataset, tcr_antigen_class) %>%
+  summarise(cell_cnt = length(barcode)) %>%
+  ungroup() %>%
+  group_by(dataset) %>%
+  mutate(cell_prop = cell_cnt / sum(cell_cnt),
+         cell_percent = cell_prop * 100) %>%
+  ungroup()
+
+ag.summary
+```
+
+Plotting the antigen specificity of the T cells on the UMAP:
+```{r umap_with_ag_spec_trb}
+#plotting onto the UMAP
+ag.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
+  geom_point(data = seurat.data %>% filter(vdj_cell_type != "T"), 
+             size = 0.5, 
+             colour = "lightgray") +
+  geom_point(data = seurat.data %>% filter(vdj_cell_type == "T", tcr_antigen_class == "none"), 
+             colour = "darkgray", 
+             size = 0.8) +
+  geom_point(data = seurat.data %>% filter(vdj_cell_type == "T", tcr_antigen_class != "none"),
+             aes(colour = tcr_antigen_class),
+             size = 0.8) +
+  scale_colour_futurama(name = "antigen") +
+  theme_custom() +
+  facet_grid(~ dataset) +
+  guides(colour = guide_legend(override.aes = list(size = 5))) +
+  labs(x = "UMAP_1",
+       y = "UMAP_2",
+       caption = "unannotated T cells in dark gray\nnon-T cells in light gray")
+plot(ag.umap.p1)
+```
+
+[Back to generating antigen reference for TRBs](https://kjlj.github.io/scRNA-seq_VDJ/docs/generating_Ag_reference_for_TRB.html)
+
+[Return to main page.](../README.md)

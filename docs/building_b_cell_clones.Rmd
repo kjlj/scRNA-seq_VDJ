@@ -306,3 +306,7 @@ Write the bcr data that now includes the clone ID to a tab-delimited file:
 ```{r output_data}
 write_tsv(bcr.cln.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
 ```
+
+## Next step
+
+Now move to [integrating VDJ with scRNA-seq data](https://kjlj.github.io/scRNA-seq_VDJ/docs/integrating_gex_vdj.html).

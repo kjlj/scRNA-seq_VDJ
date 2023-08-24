@@ -298,3 +298,7 @@ write_tsv(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_TR_cellra
 saveRDS(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/bcr_data.Rds")
 saveRDS(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/tcr_data.Rds")
 ```
+
+## Next step
+
+Now move to [building clones for the Ig data](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html).

@@ -1,4 +1,4 @@
-# setting up IgBLAST 
+# Setting up IgBLAST 
 
 Instructions for installation are available [here](https://ncbi.github.io/igblast/cook/How-to-set-up.html). At time of writing the current version is v1.21. Installation packages for various operating systems can be found at [https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/](https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/).
 
@@ -189,3 +189,5 @@ open -a TextEdit imgt_tr_c_human.fa
 ```
 
 [Return to main page.](../README.md)
+
+[Go to Running IgBLAST.](running_igblast.md)
