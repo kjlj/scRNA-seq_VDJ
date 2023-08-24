@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Combing the metadata from the VDJ assay with the FindMarkers function for Seurat permits differential gene expression comparisons using the VDJ features such as expanded vs. unexpanded clones, comparing clones/clonotypes to each other, etc.
 
+The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/dge_using_VDJ_features.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## R packages
 

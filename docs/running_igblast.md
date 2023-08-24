@@ -84,5 +84,7 @@ cd ~/data/scRNA-seq_workshop/tumour/
 ```
 
 [Back to setting up IgBLAST.](igblast_setup.md)
-[Return to main page.](../README.md)
+
+[Return to main page.](https://kjlj.github.io/scRNA-seq_VDJ/)
+
 [Go to joining cellranger and IgBLAST data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html)

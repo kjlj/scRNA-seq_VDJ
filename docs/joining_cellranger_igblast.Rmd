@@ -14,7 +14,7 @@ For each dataset now have the V(D)J data from Cell Ranger (the filtered_contig_a
 
 Combining these files in R to summarise the paired chains for each cell. Running R in RStudio on [Posit cloud](https://posit.cloud/). After logging in, can create a new project and within the project a new RScript (joining_cellranger_igblast.R).
 
-Workflow for combining files is described [here](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html). The RScript is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Working locally versus working on Posit Cloud
 

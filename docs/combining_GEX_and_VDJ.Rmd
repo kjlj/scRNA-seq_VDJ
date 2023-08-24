@@ -12,11 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The VDJ is integrated to the Seurat object using metadata slots. This permits the VDJ features to be used in plotting and other Seurat functions such as finding gene markers. 
 
+The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/combining_GEX_and_VDJ.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+
 ## R session setup
 
 ### R packages
 
-Requires [Seurat](https://satijalab.org/seurat/) to interact with the seurat object generated from processing of the gene expression data. Assumes this has been saved as an RDS. Once again will be be using the [tidyverse packages](https://www.tidyverse.org/) for data manipulation, [ggpubr](https://rpkgs.datanovia.com/ggpubr/) for plot layouts and also adding stats to panels, [ggsci](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html) for colour palettes and rstatix for generating ggpubr/ggplot2 compatible data for showing stats on panels.
+Requires [Seurat](https://satijalab.org/seurat/) to interact with the Seurat object generated from processing of the gene expression data. Assumes this has been saved as an RDS. Once again will be be using the [tidyverse packages](https://www.tidyverse.org/) for data manipulation, [ggpubr](https://rpkgs.datanovia.com/ggpubr/) for plot layouts and also adding stats to panels, [ggsci](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html) for colour palettes and rstatix for generating ggpubr/ggplot2 compatible data for showing stats on panels.
 
 ```{r loading_packages}
 #installing R packages
