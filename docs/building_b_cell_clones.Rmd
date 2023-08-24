@@ -308,5 +308,8 @@ write_tsv(bcr.cln.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_ce
 ```
 
 ## Next step
-
 Now move to [integrating VDJ with scRNA-seq data](https://kjlj.github.io/scRNA-seq_VDJ/docs/integrating_gex_vdj.html).
+
+Go back to [merging cell ranger and IgBLAST data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html).
+
+Or [retrun to main page](https://kjlj.github.io/scRNA-seq_VDJ/)

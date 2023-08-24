@@ -138,4 +138,4 @@ plot(ag.umap.p1)
 
 [Back to generating antigen reference for TRBs](https://kjlj.github.io/scRNA-seq_VDJ/docs/generating_Ag_reference_for_TRB.html)
 
-[Return to main page.](../README.md)
+[Return to main page](https://kjlj.github.io/scRNA-seq_VDJ)

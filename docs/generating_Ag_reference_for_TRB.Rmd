@@ -229,6 +229,6 @@ rm -rf tcr_ag_refs/immuneCODE
 rm -rf tcr_ag_refs/vdjdb
 ```
 
-[Return to main page.](../README.md)
+[Return to main page.](https://kjlj.github.io/scRNA-seq_VDJ)
 
 [Go to annotating T cells in single cell data](https://kjlj.github.io/scRNA-seq_VDJ/docs/antigen_annotation_T_cells.html)

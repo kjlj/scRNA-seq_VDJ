@@ -1,6 +1,24 @@
-#setting working directory
-#setwd('~/Documents/GitHub/scRNA-seq_VDJ/')
+---
+title: "Integrating GEX and VDJ"
+output: html_document
+date: "`r Sys.Date()`"
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+The VDJ is integrated to the Seurat object using metadata slots. This permits the VDJ features to be used in plotting and other Seurat functions such as finding gene markers. 
+
+## R session setup
+
+### R packages
+
+Requires [Seurat](https://satijalab.org/seurat/) to interact with the seurat object generated from processing of the gene expression data. Assumes this has been saved as an RDS. Once again will be be using the [tidyverse packages](https://www.tidyverse.org/) for data manipulation, [ggpubr](https://rpkgs.datanovia.com/ggpubr/) for plot layouts and also adding stats to panels, [ggsci](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html) for colour palettes and rstatix for generating ggpubr/ggplot2 compatible data for showing stats on panels.
+
+```{r loading_packages}
 #installing R packages
 #check if the package is already installed, if not, install it
 if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
@@ -44,7 +62,10 @@ library(ggpubr)
 library(ggsci)
 #stats package for ggplot2
 library(rstatix)
+```
 
+### Themes
+```{r ggplot_themes}
 #themes for plots
 theme_custom <- function (base_size = 12) { 
   theme_bw(base_size=base_size) %+replace% 
@@ -64,15 +85,20 @@ theme_x_rotated <- function (base_size = 12) {
   theme_custom(base_size=base_size) %+replace% 
     theme(axis.text.x = element_text(colour="black", angle = 90, hjust = 1, vjust = 0.5, size=base_size))
 }
+```
 
+## Loading datasets
 
+Loading the [VDJ data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html) for each cell that is the merging of the cellranger and IgBLAST outputs. For the B cells this includes the [clone calling](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html).
+
+```{r loading_datasets}
 #loading VDJ data
 ## loading form git hub
 #b.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
 #t.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 ## loading from local
-b.data <- read_tsv("data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
-t.data <- read_tsv("data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
+b.data <- read_tsv("../data/pbmc-tumour_Ig_cellranger_igblast_per-barcode_clns.tsv")
+t.data <- read_tsv("../data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 
 
 #loading seurat objects
@@ -82,12 +108,14 @@ t.data <- read_tsv("data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 #tumour.seurat.obj <- readRDS(url("https://www.dropbox.com/scl/fi/scik47zay4x27t4wxmo70/tumour_seurat-without-VDJ-genes-azimuth.rds?rlkey=z8ghoeoboaneniv82e2xywji3&dl=1"))
 
 #loading from local
-pbmc.seurat.obj <- readRDS("data/pbmc_seurat-without-VDJ-genes-azimuth.rds")
-tumour.seurat.obj <- readRDS("data/tumour_seurat-without-VDJ-genes-azimuth.rds")
+pbmc.seurat.obj <- readRDS("../seurat_objects/pbmc_seurat-without-VDJ-genes-azimuth.rds")
+tumour.seurat.obj <- readRDS("../seurat_objects/tumour_seurat-without-VDJ-genes-azimuth.rds")
+```
 
+## Filtering VDJ data
 
-#up to now we have treated the B and T VDJ data within the same dataset independently but we are now going to unite them with the scRNA-seq data
-#shouldn't have cells with both B and T VDJ for the same cell barcode but doublets (which haven't been filtered from the VDJ) can result in this artifact
+Up to now have treated the B and T VDJ data within the same dataset independently but they are now going to be united with the scRNA-seq data. This means that for each dataset, each cell barcode can only have a single entry - either B or T VDJ data. There shouldn't be cells with both B and T VDJ for the same cell barcode, but doublets (which haven't been filtered from the VDJ) can result in this artifact. Cell barcodes that have both B and T VDJ data need to be identified and removed:
+```{r filtering_dual_barcodes}
 #check for any cell barcodes that have both B and T cell data, likely to represent doublets and should be filtered
 dual.bt.summary <- bind_rows(b.data %>% 
                                select(barcode, dataset) %>% 
@@ -104,8 +132,10 @@ dual.bt.summary <- bind_rows(b.data %>%
 
 #get count for the number of cells with both B and T cell data from each dataset
 with(dual.bt.summary, table(dataset, dual_cell))
+```
 
-#add the dual_cell column to the b and t data and filter the cells that are TRUE
+Add the dual_cell column to the B and T data and filter the cells that are TRUE:
+```{r filtering_dual_barcodes2}
 b.data <- b.data %>%
   left_join(dual.bt.summary %>% select(-c(T, B)), by = c("barcode", "dataset")) %>%
   filter(dual_cell == FALSE)
@@ -119,31 +149,48 @@ t.data <- t.data %>%
 table(t.data$dataset)
 
 rm(dual.bt.summary)
+```
 
-##there may also be cell barcodes for which we have VDJ data but the cell barcode was removed from GEX during filtering
-##need to harmonise the cellbarcodes between the VDJ and GEX, and drop VDJ cell barcodes that don't have data in the GEX
+
+There may also be cell barcodes for which there is VDJ data but the cell barcode was removed from GEX during filtering. To harmonise the cell barcodes between the VDJ and GEX, and drop VDJ cell barcodes that don't have data in the GEX get a list of the cell barcodes for the PBMC and tumour samples from the Seurat objects. This can be obtained by getting the rownames from the meta.data slot in the objects:
+```{r permitted_barcode_list}
+#get the barcodes for the PBMCs
 pbmc.barcodes <- tibble(barcode = rownames(pbmc.seurat.obj@meta.data)) %>%
   mutate(dataset = "pbmc",
          in_gex = TRUE)
+
+#get the barcodes for the tumour
 tumour.barcodes <- tibble(barcode = rownames(tumour.seurat.obj@meta.data)) %>%
   mutate(dataset = "tumour",
          in_gex = TRUE)
+
+#combine, the dataset col keeps things unique
 barcodes <- bind_rows(pbmc.barcodes, tumour.barcodes)
 
+#join with the B cell data
 b.data <- b.data %>%
   left_join(barcodes) %>%
   mutate(in_gex = ifelse(is.na(in_gex), FALSE, TRUE))
 
+#join with the T cell data
 t.data <- t.data %>%
   left_join(barcodes) %>%
   mutate(in_gex = ifelse(is.na(in_gex), FALSE, TRUE))
 
+#print the number of cell barcodes that overlap with the GEX
 with(t.data, table(dataset, in_gex))
 with(b.data, table(dataset, in_gex))
 
+#removing data no longer needed to save memory due to size of seurat objects
 rm(list = c("pbmc.barcodes", "tumour.barcodes", "barcodes"))
+```
 
-#there are some additional data fields that could be of interest for our investigations that we can add to the B and T cell datasets
+## Adding additional data
+
+There are some additional data fields that could be of interest for our investigations that we can add to the B and T cell datasets.
+
+For the B cells, remove the cells that aren't in the GEX and add columns for paired chains, clone size, whether or not the cell is part of an expanded clone and percent of somatic hypermutation and the isotype:
+```{r add_b_cell_data}
 #add extra data fields to the b cell data
 b.data <- b.data %>%
   filter(in_gex) %>% #remove VDJ for cells that aren't in the GEX
@@ -163,7 +210,11 @@ with(b.data, table(dataset, b_expanded_cln))
 with(b.data, table(dataset, b_mut_class))
 #number of cells for each isotype subclass
 with(b.data, table(dataset, isotype))
+```
 
+
+For the T cells, removing the cells that don't have the barcodes, and then adding paired clonotype labels, clone size and whether or not the cell is part of a clonal expansion:
+```{r add_t_cell_data}
 #add additional fields to the t cell data
 t.data <- t.data %>%
   filter(in_gex) %>% #removing cells that aren't in the GEX
@@ -181,7 +232,10 @@ t.data <- t.data %>%
 #number of CELLs in expanded clones
 with(t.data, table(dataset, t_expanded_cln))
 with(t.data, table(dataset, isotype))
+```
 
+Ranking for the clones/clonotypes can also be added:
+```{r adding_cln_ranks}
 ## adding a rank for the clones/clonotypes
 b.cln.rnks <- b.data %>%
   filter(!(is.na(unq_clone_id))) %>%
@@ -218,9 +272,12 @@ t.data <- t.data %>%
             by = c("paired_clonotype", "dataset"))
 
 rm(t.cln.rnks)
+```
 
-##format the metadata to merge with the seurat objects for the scRNA-seq analysis from the GEX
-## the join will happen via the barcode and here we are selecting the subset of columns that want to add into the seurat metadata
+## Adding metadata to seurat object
+
+The B and T cell data can now be formatted to merge with the Seurat objects for the scRNA-seq analysis from the GEX. The join will happen via the barcode and here we are selecting the subset of columns that want to add into the Seurat metadata. This list can be expanded/contracted as needed:
+```{r selecting_cols_for_metadata}
 ## this can be altered
 b.metadata <- b.data %>%
   select(barcode, dataset, v_igh, j_igh, v_igkl, j_igkl, unq_clone_id, bcr_paired, b_cln_rnk, b_expanded_cln,
@@ -228,9 +285,10 @@ b.metadata <- b.data %>%
 
 t.metadata <- t.data %>%
   select(barcode, dataset, v_tra, j_tra, v_trb, j_trb, paired_clonotype, tcr_paired, t_cln_rnk, t_expanded_cln, isotype)
+```
 
-##to add the metadata need to convert from a tibble to a data frame and move the barcode to the row names, also need to split the PBMC and tumour data
-
+To add the metadata need to convert from a tibble to a data frame and move the barcode to the row names, also need to split the PBMC and tumour data:
+```{r formatting_pbmc_metadata}
 ##PBMC
 #create a data.frame from combining the B and T cell data for the PBMC dataset
 #adding an extra column after bring the data together to indicate whether a cell has B VDJ, T VDJ or neither
@@ -243,15 +301,22 @@ pbmc.metadata <- as.data.frame(b.metadata %>% filter(dataset == "pbmc") %>%
 rownames(pbmc.metadata) <- pbmc.metadata$barcode
 #remove the barcode column
 pbmc.metadata <- pbmc.metadata %>% select(-barcode)
+```
 
+Adding PBMC metadata:
+```{r adding_pbmc_metadata}
 #add the metadata to the seurat object, as the rownames are the cell barcodes this will ensure everything gets matched up!
 pbmc.seurat.obj <- AddMetaData(pbmc.seurat.obj, pbmc.metadata)
 
 #check the meta data cols now in the seurat object
 colnames(pbmc.seurat.obj@meta.data)
 
+#can remove the data frame once it is in the seurat object
 rm(list = c("pbmc.metadata"))
+```
 
+Repeating for the tumour dataset:
+```{r adding_tumour_metadata}
 ##tumour
 #create a data.frame from B and T data for the tumour dataset
 tumour.metadata <- as.data.frame(b.metadata %>% filter(dataset == "tumour") %>%
@@ -271,57 +336,83 @@ tumour.seurat.obj <- AddMetaData(tumour.seurat.obj, tumour.metadata)
 #check the meta data cols now in the seurat object
 colnames(tumour.seurat.obj@meta.data)
 
+#remove the data now done with it
 rm(list = c("tumour.metadata", "b.metadata", "t.metadata"))
+```
 
+## Plotting using VDJ metadata
+
+Now that the VDJ features are in the meta.data slot for seurat objects they can be used for plotting. Start with highlighting which cells have B or T VDJ data:
+```{r seurat_plots_1}
 #plot the metadata onto the umap within Seurat
 p1 <- DimPlot(pbmc.seurat.obj, group.by = "vdj_cell_type", cols = pal_d3()(2),  na.value = "lightgray")
 plot(p1)
+```
 
+Plotting which cells are using different isotype subclasses or TRBC genes:
+```{r seurat_plots_2}
 p1 <- DimPlot(pbmc.seurat.obj, group.by = "isotype", cols = pal_d3("category20")(10), na.value = "lightgray")
 plot(p1)
+```
 
+Plotting which clones are expanded versus singleton:
+```{r seurat_plots_3}
 p1 <- DimPlot(subset(pbmc.seurat.obj, vdj_cell_type == "B"), 
               group.by = "b_expanded_cln", 
               cols = pal_d3("category20")(10), 
               pt.size = 0.8,
               na.value = "lightgray")
 plot(p1)
+```
 
+Plotting B cell clones based on their clone rank:
+```{r seurat_plots_4}
 p1 <- DimPlot(subset(pbmc.seurat.obj, vdj_cell_type == "B"), 
               group.by = c("b_cln_rnk"), 
               cols = pal_d3("category20")(10), 
               pt.size = 0.8,
               na.value = "lightgray")
 plot(p1)
+```
 
-
-p1 <- DimPlot(subset(pbmc.seurat.obj, vdj_cell_type == "T"), 
-              group.by = "t_expanded_cln", 
-              cols = pal_d3("category20")(10), 
-              pt.size = 0.8,
-              na.value = "lightgray")
-plot(p1)
-
-
+Some examples for the tumour dataset:
+```{r seurat_plots_5}
 #tumour
 p1 <- DimPlot(tumour.seurat.obj, group.by = "vdj_cell_type", cols = pal_d3()(2),  na.value = "lightgray")
 plot(p1)
+```
 
+```{r seurat_plots_6}
 p1 <- DimPlot(tumour.seurat.obj, group.by = "isotype", cols = pal_d3("category20")(20), na.value = "lightgray")
 plot(p1)
+```
 
 
+Not limited to UMAPS, can also use the VDJ meta data for other plots types. For example, can look at gene expression of CD3 for each seurat cluster for T cell clonotypes that are either expanded or singleton:
+```{r seurat_plots_7}
 #can use the VDJ data when exploring GEX too
 p1 <- VlnPlot(tumour.seurat.obj, group.by = "seurat_clusters", split.by = "t_expanded_cln", features = c("CD3E"))
 plot(p1)
+```
 
+
+Or, showing relative gene expression for on a feature plot:
+```{r seurat_plots_8}
 p1 <- FeaturePlot(tumour.seurat.obj, split.by = "t_expanded_cln", features = c("CD3E"))
 plot(p1)
 
+#remove the plot object and run garbage collection 
 rm(p1)
 gc()
+```
 
-#plotting with seurat is not very flexible, so let's regain some control
+
+## Plotting outside of Seurat
+
+Plotting within Seurat can lack some flexibility, so rather than importing data to the Seurat object, data can also be exported from Seurat to use the tidyverse functions. Data is exported from the meta.data and the UMAP coordinates slots.
+
+For the PBMC sample:
+```{r pbmc_data_dump}
 ## PBMCs
 pbmc.seurat.meta <- as.data.frame(pbmc.seurat.obj@meta.data) %>% 
   rownames_to_column("barcode") 
@@ -334,7 +425,10 @@ pbmc.seurat.data <- pbmc.seurat.meta %>%
 pbmc.seurat.data %>% head()
 
 rm(list = c("pbmc.seurat.meta", "pbmc.seurat.umap"))
+```
 
+For the tumour sample:
+```{r tumour_data_dump}
 ## Tumour
 tumour.seurat.meta <- as.data.frame(tumour.seurat.obj@meta.data) %>% 
   rownames_to_column("barcode") 
@@ -346,12 +440,15 @@ tumour.seurat.data <- tumour.seurat.meta %>%
 
 tumour.seurat.data %>% head()
 
+#remove the seurat objects now that the necessary data has been dumped
 rm(list = c("tumour.seurat.meta", "tumour.seurat.umap",
             "tumour.seurat.obj", "pbmc.seurat.obj"))
+#force garbage collection
 gc()
+```
 
-#now have greater control over the plotting & the format of the plots
-
+Now have greater control over the plotting & the format of the plots and we have freed up a lot of memory by unloading the seurat objects.
+```{r ggplot_umap}
 #an example of plotting B cell SHM levels on the UMAP
 pbmc.shm.umap.p1 <- ggplot(pbmc.seurat.data, aes(x = umap_1, y = umap_2)) +
   geom_point(data = pbmc.seurat.data %>% filter(vdj_cell_type != "B"),
@@ -367,8 +464,9 @@ pbmc.shm.umap.p1 <- ggplot(pbmc.seurat.data, aes(x = umap_1, y = umap_2)) +
        title = "PBMC IGHV SHM",
        caption = "non B cells in gray") #labels for plot
 plot(pbmc.shm.umap.p1)
+```
 
-
+```{r ggplot_umap2}
 tumour.shm.umap.p1 <- ggplot(tumour.seurat.data, aes(x = umap_1, y = umap_2)) +
   geom_point(data = tumour.seurat.data %>% filter(vdj_cell_type != "B"),
              size = 0.5,
@@ -383,9 +481,10 @@ tumour.shm.umap.p1 <- ggplot(tumour.seurat.data, aes(x = umap_1, y = umap_2)) +
        title = "tumour IGHV SHM",
        caption = "non B cells in gray") #labels for plot
 plot(tumour.shm.umap.p1)
+```
 
-shm.umap.panel <- ggarrange(pbmc.shm.umap.p1, tumour.shm.umap.p1)
-shm.umap.panel
+We can build more complex panels using ggplot + ggpubr. For example, visualing the SHM of the B cells on UMAPs and displaying side-by-side with a quantification of the SHM% for clones for each isotype with statistics:
+```{r b_cell_shm_panel}
 
 #only plotting the B cells, but splitting by isotype
 pbmc.shm.umap.p2 <- ggplot(pbmc.seurat.data %>% filter(vdj_cell_type == "B"), aes(x = umap_1, y = umap_2)) +
@@ -400,7 +499,7 @@ pbmc.shm.umap.p2 <- ggplot(pbmc.seurat.data %>% filter(vdj_cell_type == "B"), ae
   scale_y_continuous(limits = c(-20, 15)) +
   scale_x_continuous(limits = c(-15, 10)) +
   facet_wrap(~ isotype, nrow = 2, scales = "free") #splitting by the isotype subclass
-plot(pbmc.shm.umap.p2)
+#plot(pbmc.shm.umap.p2)
 
 tumour.shm.umap.p2 <- ggplot(tumour.seurat.data %>% filter(vdj_cell_type == "B"), aes(x = umap_1, y = umap_2)) +
   geom_point(size = 1,
@@ -414,25 +513,7 @@ tumour.shm.umap.p2 <- ggplot(tumour.seurat.data %>% filter(vdj_cell_type == "B")
   scale_y_continuous(limits = c(-20, 15)) +
   scale_x_continuous(limits = c(-15, 25)) +
   facet_wrap(~ isotype, nrow = 2, scales = "free") #splitting by the isotype subclass
-plot(tumour.shm.umap.p2)
-
-#splitting by seurat cluster
-tumour.shm.umap.p3 <- ggplot(tumour.seurat.data %>% filter(vdj_cell_type == "B"), aes(x = umap_1, y = umap_2)) +
-  geom_point(size = 1,
-             aes(colour = vh_mut)) + 
-  scale_color_viridis_c(name = "VH SHM %") + #using the continuous viridis for the colour
-  theme_custom() +
-  labs(x = "UMAP_1",
-       y = "UMAP_2",
-       title = "tumour IGHV SHM",
-       caption = "only showing cells with Ig VDJ") + #labels for plot
-  scale_y_continuous(limits = c(-20, 15)) +
-  scale_x_continuous(limits = c(-15, 25)) +
-  facet_wrap(~ seurat_clusters, nrow = 2, scales = "free") #splitting by the cluster label
-plot(tumour.shm.umap.p3)
-
-##while UMAP is good for visualising the clusters, can pair the UMAPs up with other summary plots
-#combine the datasets and create factor levels for the isotypes
+#plot(tumour.shm.umap.p2)
 
 ## isotype order by xsome location
 isotype_order <- c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2")
@@ -454,7 +535,7 @@ shm.summary.p1 <- ggplot(seurat.data %>% filter(vdj_cell_type == "B"),
        y = "VH SHM %") +
   scale_colour_aaas() +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-plot(shm.summary.p1)
+#plot(shm.summary.p1)
 
 #what about some stats for this
 shm.summary.stats <- seurat.data %>% 
@@ -483,13 +564,14 @@ shm.summary.p2 <- ggplot(seurat.data %>% filter(vdj_cell_type == "B"),
        caption = "p-values: Wilcoxon, bonf adjusted") +
   scale_colour_aaas() +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-plot(shm.summary.p2)
+#plot(shm.summary.p2)
 
 plot(ggarrange(ggarrange(pbmc.shm.umap.p1, tumour.shm.umap.p1, nrow = 1),
                shm.summary.p2, nrow = 2, ncol = 1))
+```
 
-
-#how many clones/clonotypes are expanded?
+Exploring the extend of clone/clonotype expansion in the different datasets:
+```{r clonal_exp_panel}
 exp.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   geom_point(data = seurat.data %>% filter(is.na(vdj_cell_type)),
              size = 0.5, colour = "lightgray") + #bottom layer are the cell that don't have any VDJ
@@ -509,7 +591,7 @@ exp.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   facet_grid(dataset ~ vdj_cell_type) +
   scale_colour_npg(name = "expansions") +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-exp.umap.p1
+#exp.umap.p1
 
 
 b.expanded.clns.summary <- b.data %>%
@@ -521,8 +603,7 @@ b.expanded.clns.summary <- b.data %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt),
          cln_prop = cln_cnt / sum(cln_cnt)) %>%
   ungroup()
-
-b.expanded.clns.summary
+#b.expanded.clns.summary
 
 b.exp.p1 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -532,7 +613,7 @@ b.exp.p1 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)
   theme(legend.position = "bottom") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(y = "% clones")
-plot(b.exp.p1)
+#plot(b.exp.p1)
 
 b.exp.p2 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -542,7 +623,7 @@ b.exp.p2 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100
   theme(legend.position = "bottom") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(y = "% cells")
-plot(b.exp.p2)
+#plot(b.exp.p2)
 
 
 t.expanded.clns.summary <- t.data %>%
@@ -554,8 +635,7 @@ t.expanded.clns.summary <- t.data %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt),
          cln_prop = cln_cnt / sum(cln_cnt)) %>%
   ungroup()
-
-t.expanded.clns.summary
+#t.expanded.clns.summary
 
 t.exp.p1 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -565,7 +645,7 @@ t.exp.p1 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)
   theme(legend.position = "bottom") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(y = "% clonotypes")
-plot(t.exp.p1)
+#plot(t.exp.p1)
 
 t.exp.p2 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -575,7 +655,7 @@ t.exp.p2 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100
   theme(legend.position = "bottom") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(y = "% cells")
-plot(t.exp.p2)
+#plot(t.exp.p2)
 
 ##stacked bar charts for the expanded clonotypes
 b.cln.size.summary <- seurat.data %>%
@@ -587,8 +667,7 @@ b.cln.size.summary <- seurat.data %>%
   group_by(dataset) %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt)) %>%
   ungroup()
-
-b.cln.size.summary
+#b.cln.size.summary
 
 b.cln.sizes.p1 <- ggplot(b.cln.size.summary %>% filter(label != "singletons"), 
                          aes(x = dataset, y = cell_cnt, group = cell_cnt)) +
@@ -602,8 +681,7 @@ b.cln.sizes.p1 <- ggplot(b.cln.size.summary %>% filter(label != "singletons"),
   theme_custom() +
   theme(legend.position = "none") +
   labs(y = "# cells")
-b.cln.sizes.p1
-
+#plots(b.cln.sizes.p1)
 
 t.cln.size.summary <- seurat.data %>%
   filter(vdj_cell_type == "T") %>%
@@ -614,9 +692,7 @@ t.cln.size.summary <- seurat.data %>%
   group_by(dataset) %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt)) %>%
   ungroup()
-
-t.cln.size.summary
-
+#t.cln.size.summary
 
 t.cln.sizes.p1 <- ggplot(t.cln.size.summary %>% filter(label != "singletons"), 
                          aes(x = dataset, y = cell_cnt, group = cell_cnt)) +
@@ -630,8 +706,7 @@ t.cln.sizes.p1 <- ggplot(t.cln.size.summary %>% filter(label != "singletons"),
   theme_custom() +
   theme(legend.position = "none") +
   labs(y = "# cells")
-t.cln.sizes.p1
-
+#plot(t.cln.sizes.p1)
 
 #build into a single panel to summarise the expansions across the two datasets
 ## turning off the legends as will be provided by the UMAP but adding a title to each for cell type
@@ -651,26 +726,25 @@ plot(ggarrange(exp.umap.p1 + theme(legend.position = "top"),
                ggarrange(b.exp.panel, t.exp.panel, nrow = 2), 
                ggarrange(b.cln.sizes.p1, t.cln.sizes.p1, nrow = 2),
                nrow = 1, widths = c(4, 2, 1)))
+```
 
-#save the tibble that include the seurat with VDJ
-write_tsv(seurat.data, "data/pbmc-tumour_seruat_data.tsv")
+## Visualising clusters and other features simulatanesouly
 
-##save the b and t cell data that has the additional columns and filtering
-write_tsv(b.data, "data/pbmc-tumour_b_cells_vdj.tsv")
-write_tsv(t.data, "data/pbmc-tumour_t_cells_vdj.tsv")
+One challenge when using data point fill/colour to encode a VDJ feature like SHM is that it becomes hard to track the clusters on the UMAP. Hull plots can be used to automate the generation of outlines for the clusters. To use hull plots need to laod the ggforce package:
+```{r load_ggforce}
 
-
-##what about adding cluster information to the umap when we are already colouring cells by another feature?
-## using hull plots to outline clusters
 if (sum(grepl("ggforce", rownames(installed.packages()))) > 0) {
   print("ggforce is already installed")
 } else {
   install.packages("ggforce")
+  install.packages("concaveman")
 }
 
 library(ggforce)
+```
 
-#for hull plot to work need to exclude cells that are well outside their cluster
+For the hull plots to make reasonable representation of the clusters it is sometime necessary to exclude cells that are outliers from the main density of points for the cluster. This will vary between datasets, so may need to experiment with different values for outlier exclusions. Here using the median UMAP1 + UMAP2 coordinates for clusters and a +/- of 2.2:
+```{r flag_cluster_outliers}
 clst.outliers <- seurat.data %>% 
   group_by(dataset, seurat_clusters) %>%
   mutate(median_umap_1 = median(umap_1),
@@ -679,8 +753,11 @@ clst.outliers <- seurat.data %>%
   mutate(cluster_outlier = case_when((umap_1 < (median_umap_1 - 2.2)) | (umap_1 > (median_umap_1 + 2.2)) ~ TRUE,
                                      (umap_2 < (median_umap_2 - 2.2)) | (`umap_2` > (median_umap_2 + 2.2)) ~ TRUE,
                                      TRUE ~ FALSE))
+```
 
-##points coloured by seurat cluster
+
+Here is the UMAP with the data points coloured by Seurat cluster:
+```{r cluster_umap}
 umap.clst.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2, color = factor(seurat_clusters))) +
   geom_point(size = 0.2) +
   scale_color_d3(palette = "category20",
@@ -689,7 +766,10 @@ umap.clst.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2, color = factor(s
   facet_wrap(~ dataset) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 umap.clst.p1
+```
 
+The result of adding cluster outlines using the hull plots:
+```{r hull_plots}
 ##points + hull plot for cluster regions
 umap.clst.p2 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2, color = factor(seurat_clusters))) +
   geom_point(size = 0.4) +
@@ -702,11 +782,14 @@ umap.clst.p2 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2, color = factor(s
   theme_custom() +
   facet_wrap(~ dataset) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-umap.clst.p2
+#umap.clst.p2
 
 plot(ggarrange(umap.clst.p1, umap.clst.p2, nrow = 2))
+```
 
-##keeping hull outline, but showing expanded clones
+
+Keeping the hull outline, but showing expanded clones using the data point colouring:
+```{r hull_plots2}
 p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   geom_point(size = 0.8, shape = 21, 
              aes(fill = vh_mut),
@@ -721,4 +804,19 @@ p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   theme_custom() +
   facet_wrap(~ dataset) +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-p1
+plot(p1)
+```
+
+## Saving to output files
+
+As the B and T cell data have been filtered and updated save new versions:
+```{r output_files}
+#save the tibble that include the seurat with VDJ
+write_tsv(seurat.data, "../data/pbmc-tumour_seruat_data.tsv")
+
+##save the b and t cell data that has the additional columns and filtering
+write_tsv(b.data, "../data/pbmc-tumour_b_cells_vdj.tsv")
+write_tsv(t.data, "../data/pbmc-tumour_t_cells_vdj.tsv")
+```
+
+[Return to main page.](https://kjlj.github.io/scRNA-seq_VDJ)
