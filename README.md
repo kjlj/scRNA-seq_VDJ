@@ -24,9 +24,11 @@ These are the two files that we will use for integrating VDJ data with scRNA-seq
 This session with focus on utilising post-processed VDJ data from 10x VDJ for integration with scRNA-seq. We will build off the earlier sessions that generated the Seurat objects with the Azimuth annotation and the cell clustering. The Seurat objects are available from the Dropbox at [pbmc](https://www.dropbox.com/scl/fi/4s610vt1mgtmgibdvfsar/pbmc_seurat-without-VDJ-genes-azimuth.rds?rlkey=ftdkxi9mnxezhbb42dqftbqel&dl=0) and [tumour](https://www.dropbox.com/scl/fi/scik47zay4x27t4wxmo70/tumour_seurat-without-VDJ-genes-azimuth.rds?rlkey=z8ghoeoboaneniv82e2xywji3&dl=0).
 
 Topics:
-- [Adding VDJ to scRNA-seq]() including displaying VDJ features on UMAPs.
-- [Antigen annotation for T cells]()
-- [DGE between clones/clonotypes]()
+- [Adding VDJ to scRNA-seq](https://kjlj.github.io/scRNA-seq_VDJ/docs/generating_Ag_reference_for_TRB.html) including displaying VDJ features on UMAPs.
+- Antigen annotation for T cells
+  - [generating reference datatset](https://kjlj.github.io/scRNA-seq_VDJ/docs/generating_Ag_reference_for_TRB.html)
+  - [annotating single cell clontoypes](https://kjlj.github.io/scRNA-seq_VDJ/docs/antigen_annotation_T_cells.html)
+- [DGE between clones/clonotypes](https://kjlj.github.io/scRNA-seq_VDJ/docs/)
 
 ## Additional information
 
