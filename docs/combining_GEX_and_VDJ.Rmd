@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-The VDJ is integrated to the Seurat object using metadata slot. This permits the VDJ features to be used in plotting and other Seurat functions such as finding gene markers. 
+The VDJ is integrated to the Seurat object using the metadata slot. This permits the VDJ features to be used in plotting and other Seurat functions such as finding gene markers. 
 
 The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/combining_GEX_and_VDJ.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
@@ -757,7 +757,7 @@ plot(ggarrange(exp.umap.p1 + theme(legend.position = "top"),
 
 ## Visualising clusters and other features simulatanesouly
 
-One challenge when using data point fill/colour to encode a VDJ feature like SHM is that it becomes hard to track the clusters on the UMAP. Hull plots can be used to automate the generation of outlines for the clusters. To use hull plots need to laod the ggforce package:
+One challenge when using data point fill/colour to encode a VDJ feature like SHM is that it becomes hard to track the clusters on the UMAP. Hull plots can be used to automate the generation of outlines for the clusters. To use hull plots need to load the ggforce package:
 ```{r load_ggforce}
 
 if (sum(grepl("ggforce", rownames(installed.packages()))) > 0) {

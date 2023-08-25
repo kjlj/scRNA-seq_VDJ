@@ -261,6 +261,7 @@ p1 <- ggplot(vgene1.vs.vgene2.markers,
        y = "-log10(adjusted p-value)") 
 plot(p1)  
 ```
+
 Based on the comparison IgM and FCER2 more common among IGHV1-69 utilising B cells which may suggest that this gene is more commonly utilised in naive cells compared to IGHV3-23.
 
 [Return to main page](https://kjlj.github.io/scRNA-seq_VDJ/)

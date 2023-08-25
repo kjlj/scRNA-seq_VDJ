@@ -357,8 +357,8 @@ display: none;
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>The VDJ is integrated to the Seurat object using metadata slot. This
-permits the VDJ features to be used in plotting and other Seurat
+<p>The VDJ is integrated to the Seurat object using the metadata slot.
+This permits the VDJ features to be used in plotting and other Seurat
 functions such as finding gene markers.</p>
 <p>The RScript for this workflow is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/combining_GEX_and_VDJ.R">github</a>
 in the <a href="https://github.com/kjlj/scRNA-seq_VDJ">workshop
@@ -875,8 +875,8 @@ plot(p1)</code></pre>
 rm(p1)
 gc()</code></pre>
 <pre><code>##             used   (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells   4427387  236.5    7368685  393.6         NA   7368685  393.6
-## Vcells 286009047 2182.1  415954426 3173.5     102400 325435523 2482.9</code></pre>
+## Ncells   4427370  236.5    7368678  393.6         NA   7368678  393.6
+## Vcells 286009049 2182.1  415954430 3173.5     102400 325435526 2482.9</code></pre>
 </div>
 <div id="plotting-outside-of-seurat" class="section level2">
 <h2>Plotting outside of Seurat</h2>
@@ -954,8 +954,8 @@ rm(list = c(&quot;tumour.seurat.meta&quot;, &quot;tumour.seurat.umap&quot;,
 #force garbage collection
 gc()</code></pre>
 <pre><code>##            used  (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells  4403729 235.2    7368685  393.6         NA   7368685  393.6
-## Vcells 17010321 129.8  332763541 2538.8     102400 325435523 2482.9</code></pre>
+## Ncells  4403712 235.2    7368678  393.6         NA   7368678  393.6
+## Vcells 17010323 129.8  332763544 2538.8     102400 325435526 2482.9</code></pre>
 <p>We now have greater control over the plotting and the format of the
 plots and as a bounus we have freed up a lot of memory by unloading the
 Seurat objects.</p>
@@ -1253,7 +1253,7 @@ plot(ggarrange(exp.umap.p1 + theme(legend.position = &quot;top&quot;),
 <p>One challenge when using data point fill/colour to encode a VDJ
 feature like SHM is that it becomes hard to track the clusters on the
 UMAP. Hull plots can be used to automate the generation of outlines for
-the clusters. To use hull plots need to laod the ggforce package:</p>
+the clusters. To use hull plots need to load the ggforce package:</p>
 <pre class="r"><code>if (sum(grepl(&quot;ggforce&quot;, rownames(installed.packages()))) &gt; 0) {
   print(&quot;ggforce is already installed&quot;)
 } else {
