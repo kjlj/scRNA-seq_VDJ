@@ -24,7 +24,7 @@ These are the two files that we will use for integrating VDJ data with scRNA-seq
 This session with focus on utilising post-processed VDJ data from 10x VDJ for integration with scRNA-seq. We will build off the earlier sessions that generated the Seurat objects with the Azimuth annotation and the cell clustering. The Seurat objects are available from the Dropbox at [pbmc](https://www.dropbox.com/scl/fi/4s610vt1mgtmgibdvfsar/pbmc_seurat-without-VDJ-genes-azimuth.rds?rlkey=ftdkxi9mnxezhbb42dqftbqel&dl=0) and [tumour](https://www.dropbox.com/scl/fi/scik47zay4x27t4wxmo70/tumour_seurat-without-VDJ-genes-azimuth.rds?rlkey=z8ghoeoboaneniv82e2xywji3&dl=0).
 
 Topics:
-- [Adding VDJ to scRNA-seq](https://kjlj.github.io/scRNA-seq_VDJ/docs/combining_GEX_and_VDJ.Rmd) including displaying VDJ features on UMAPs.
+- [Adding VDJ to scRNA-seq](https://kjlj.github.io/scRNA-seq_VDJ/docs/combining_GEX_and_VDJ.html) including displaying VDJ features on UMAPs.
 - Antigen annotation for T cells
   - [generating reference datatset](https://kjlj.github.io/scRNA-seq_VDJ/docs/generating_Ag_reference_for_TRB.html)
   - [annotating single cell clontoypes](https://kjlj.github.io/scRNA-seq_VDJ/docs/antigen_annotation_T_cells.html)
@@ -32,14 +32,13 @@ Topics:
 
 ## Additional information
 
-### alternative reference sets
+### Alternative reference sets
 
-Alternatvies to IMGT exists for sets of germline genes to use for references. NCBI, OGRdb.
+Alternatives to IMGT exists for sets of germline genes to use for references. One useful resource from the AIRR-C (adaptive immune receptor repertoire community) is [OGRDB](https://ogrdb.airr-community.org/). OGRDB offers fasta formatted germline reference sets for [direct or API download](https://wordpress.vdjbase.org/index.php/ogrdb_news/downloading-germline-sets-from-the-command-line-or-api/) that can be feed into the workflow for creating reference databases for use with IgBLAST as described [here](docs/igblast_setup.md).
 
-### rhapsody V(D)J
+### Rhapsody V(D)J
 
-For Rhapsody data can use the VDJ_Dominant_Contigs_AIRR tab-delimed file as a starting point for post-processing. The Rhapsody output already includes the allele level information for the nearest germline match and appears to use a recent version of the IMGT reference, however it lacks percent identity columns in the output that can be used for SHM levels. The % identity can be calculated from the available output as the sequence and germline strings are included, but can optionally re-run IgBLAST to get the output.
+For Rhapsody data can use the VDJ_Dominant_Contigs_AIRR tab-delimited file(s) as a starting point for post-processing. The Rhapsody output already includes the allele level information for the nearest germline match and appears to use a recent version of the IMGT reference, however it lacks percent identity columns in the output that can be used for SHM levels. The % identity can be calculated from the available output as the sequence and germline strings are included, but can optionally re-run IgBLAST to get the output.
 
-To run IgBLAST, first need to extract the sequences from the tab-delimited file and create FASTA file(s) for input to IgBLAST.
+To run IgBLAST, it is necessary to extract the sequences from the tab-delimited file and create FASTA file(s) for input to IgBLAST. An example of a [perl script]() to do this is available on the [github repository](https://github.com/kjlj/scRNA-seq_VDJ)
 
-TODO: add example of script to extract
