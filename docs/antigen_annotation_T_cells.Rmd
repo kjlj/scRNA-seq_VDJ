@@ -10,13 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-Previously generated a dataset of TCR beta chain (TRB) clonotypes of known antigen/epitope specificity that were collected from two resources; SARS-CoV-2 from [immuneCODE]() and various antigens from [VDJdb](). These resources were parsed and wrangled into a format that will merge with the 10x T cell data in the [generating_Ag_reference_for_TRB.R]() script which is described [here]().
+We previously generated a dataset of TCR beta chain (TRB) clonotypes of known antigen/epitope specificity that were collected from two resources; SARS-CoV-2 from [immuneCODE](https://clients.adaptivebiotech.com/pub/covid-2020) and various antigens from [VDJdb](https://vdjdb.cdr3.net/). These resources were parsed and wrangled into a format that we can use to merge with the 10x T cell data.
  
-To annotate the clonotypes with antigen specificity we will rely of exact matches between the clonotype labels between the datasets; so using V + J + CDR3AA sequence. It is not uncommon to used just the CDR3 or junction AA sequence as an alternative 'complete' clonotype matching.
+To annotate the clonotypes from our single cell data with antigen specificity we will rely of exact matches between the clonotype labels between the datasets; using V + J + CDR3AA sequence. It is not uncommon to use only the CDR3 or junction AA sequence as an alternative 'complete' clonotype matching.
 
 The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/antigen_annotation_T_cells.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Setting up R session
+
+### Rpackages 
 
 Using two packages; the tidyverse collection for the data manipulation and ggsci for colour palettes.
 
@@ -45,7 +47,7 @@ library(ggsci)
 ```
 
 
-## Themes for ggplot2
+### Themes for ggplot2
 
 Adding some custom ggplot2 themes for plotting:
 ```{r ggplot_themes}
@@ -72,20 +74,30 @@ theme_x_rotated <- function (base_size = 12) {
 
 ## Loading datasets
 
-There are two datasets to load. The seurat data and the antigen annotated TRB clonotypes. In the first instance, to save on memory, loading the seurat metadata + UMAP coords data only from the tab-delimited file rather than the complete Suerat objects.
+There are two datasets to load. We will need the Seurat data and the antigen annotated TRB clonotypes. 
+
+To save on memory, we will load the Seurat metadata and UMAP coordinates from the tab-delimited file rather than the complete Suerat objects:
 ```{r loading_datasets}
 # seurat dump that includes the UMAP coords & meta with VDJ
 seurat.data <- read_tsv("~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_seruat_data.tsv")
+#or, from URL from github
+#seurat.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_seruat_data.tsv")
 
 ## annotated TCRs
-trb.ags.data <- read_tsv("~/Documents/GitHub/scRNA-seq_VDJ/tcr_ag_refs/trb_antigens.tsv")
+trb.ags.data <- read_tsv("~/Documents/GitHub/scRNA-seq_VDJ/docs/tcr_ag_refs/trb_antigens.tsv")
+#or, from URL from github
+#trb.ags.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/tcr_ag_refs/trb_antigens.tsv")
 ```
-
-TODO - add URL alternatives for loading from dropbox/github
 
 ## Annotating the TRB clonotypes
 
-Given that the antigen specific TCRs are bias towards TRB chains, annotation is using TRB only. Currently, the TCR clonotype for the single cell data is formatted as a paired clonotype label that combines the TRB:TRA. To join the single cell data with the antigen data, first extract the TRB clonotype from the paired_clonotype and then join with the antigen data using a left_join. Note that the antigen data was already collasped so that each unique TRB is listed only once with the epitopes/antigens/source appended in comma delimited lists. This is necessary to ensure a one-to-one or many-to-one relationship when doing the left_join. If there are multiple matches in the antigen data (ie, one-to-many or many-to-many) the entries in the seurat.data will become duplicated for each match and the data will no longer be one entry for cell barcode.
+Annotation is using TRB clonotype only. 
+
+Currently, the TCR clonotype for the single cell data is formatted as a paired clonotype label that combines the TRB:TRA. 
+
+To join the single cell data with the antigen data, we will first need to extract the TRB clonotype from the paired_clonotype and then join with the antigen data using a left_join. 
+
+Note that the antigen data was already collasped so that each unique TRB is listed only once with the epitopes/antigens/source appended in comma delimited lists. This is necessary to ensure a one-to-one or many-to-one relationship when doing the left_join. If there are multiple matches in the antigen data (ie, one-to-many or many-to-many) the entries in the `seurat.data` will become duplicated for each match and the data will no longer be one entry for cell barcode.
 
 ```{r annotating_ag_specificity}
 #we are focussing on TRB chain so will be joining the TRB clonotype from 10x with the TRB clonotype from the Ags

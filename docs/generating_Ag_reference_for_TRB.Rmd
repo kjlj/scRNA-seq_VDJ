@@ -104,10 +104,7 @@ Now, move back from the 'Terminal' to the 'Console'. The files that were just ob
 
 Now that we are back in the R, we can load the downloaded files for immuneCODE into R and reformat to match our clonotype labels 
 
-There are TCRs (only the TRB chains) from three different assays:
-* minigene
-* class I peptides
-* class II peptides 
+There are TCRs (only the TRB chains) from three different assays: minigene, class I peptides, and class II peptides.
 
 All three will be used:
 ```{r loading_immuneCODE}
