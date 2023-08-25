@@ -1,5 +1,5 @@
 ---
-title: "Generating TCR specificity reference"
+title: "Creating a reference for annotating TCR specificity"
 output: html_document
 date: "`r Sys.Date()`"
 ---
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-The epitope specificity of T cells may be inferred by matching TCRs to a reference database of clonotypes of known specificity. TCRs of known specificity will be collected from two sources and formatted for consistency with the clonotype labels used in the 10x data. 
+The epitope specificity of T cells may be inferred by matching TCRs to a reference database of clonotypes of known specificity. TCRs of known specificity will be collected from two sources and formatted for consistency with the clonotype labels used in our analysis of the single cell VDJ data.
 
 The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/generating_Ag_reference_TRB.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
@@ -36,6 +36,9 @@ There are two data sources from which TCRs will be collected. The first is a lar
 
 To download need to switch from 'Console' to 'Terminal' in RStudio.
 
+![click on the Terminal tab](images/Terminal_tab_1.jpg)
+![clink on the Terminal tab](images/Terminal_tab_2.jpg)
+
 When working on Posit Cloud need to run the following in the 'Terminal' tab within RStudio but on local computer to opt between Terminal within RStudio or switch to regular Terminal.
 
 First create a location to store the downloaded references:
@@ -60,7 +63,7 @@ curl -L -O https://github.com/antigenomics/vdjdb-db/releases/download/2023-06-01
 
 ```
 
-The database files are distributed as a zip archive, so uncompress it (after which the .zip can be removed):
+The database files are distributed as a zip archive, so uncompress it:
 ```{bash downloading_references3}
 cd tcr_ag_refs/vdjdb/
 
@@ -70,7 +73,7 @@ unzip vdjdb-2023-06-01.zip
 
 Moving onto the immuneCODE dataset which can be found on the [Adaptive Biotech hosted page](https://clients.adaptivebiotech.com/pub/covid-2020). 
 
-First make a directory, change to it and then use cURL to download the file:
+Change to the immuneCODE directory we already made and then use cURL to download the file:
 ```{bash downloading_references4}
 #change to the directory created for immuneCODE
 cd tcr_ag_refs/immuneCODE/
@@ -80,7 +83,7 @@ curl -O https://adaptivepublic.blob.core.windows.net/publishedproject-supplement
 
 ```
 
-As for vdjdb, the file comes are a zip archive that needs to be 'unzipped':
+As for vdjdb, the files come in a zip archive that needs to be 'unzipped', but we also need to move the files out of the sub-directory they uncompress to:
 ```{bash downloading_references5}
 cd tcr_ag_refs/immuneCODE/
 
@@ -97,7 +100,16 @@ rmdir ImmuneCODE-MIRA-Release002.1
 
 Now, move back from the 'Terminal' to the 'Console'. The files that were just obtained can be browsed in the 'Files' tab within RStudio.
 
-Load the downloaded files for immuneCODE into R. There are TCRs (only TRB) from three different assay; minigene, class I peptides and class II peptides. All three will be used:
+![](images/Console_tab_1.jpg)
+
+Now that we are back in the R, we can load the downloaded files for immuneCODE into R and reformat to match our clonotype labels 
+
+There are TCRs (only the TRB chains) from three different assays:
+* minigene
+* class I peptides
+* class II peptides 
+
+All three will be used:
 ```{r loading_immuneCODE}
 ##read in the different files
 immunecode.data1 <- read_csv("tcr_ag_refs/immuneCODE/minigene-detail.csv")
@@ -105,14 +117,14 @@ immunecode.data2 <- read_csv("tcr_ag_refs/immuneCODE/peptide-detail-ci.csv")
 immunecode.data3 <- read_csv("tcr_ag_refs/immuneCODE/peptide-detail-cii.csv")
 ```
 
-For immuneCODE the clonotype information is in the `TCR BioIdentity` column and the format is like CASGRHNSPLHF+TCRBV12-03/12-04+TCRBJ01-06. The junction AAs, TRBV and TRBJ can be extracted by splitting this at '+', but the gene names used in immuneCODE differ from the IMGT labels (TCRBJ01-06 vs. TRBJ1-6) and there can be multiple entries for the V gene (TCRBV12-03/12-04). To converted the junction AAs to CDR3 AAs need to remove the first and last AAs that are the CDR3 anchor residues (the 104-Cys and 118-Phe/Tyr). 
+For immuneCODE the clonotype information is in the `TCR BioIdentity` column and the format is like CASGRHNSPLHF+TCRBV12-03/12-04+TCRBJ01-06. The junction AAs, TRBV and TRBJ can be extracted by splitting this at '+', but the gene names used in immuneCODE differ from the IMGT labels (TCRBJ01-06 vs. TRBJ1-6) and there can be multiple entries for the V gene (TCRBV12-03/12-04). To convert the junction AAs to CDR3 AAs we need to remove the first and last AAs that are the CDR3 anchor residues (the 104-Cys and 118-Phe/Tyr). 
 
 The manipulation is:
 1. split at '+' to get junction, V(s) and J
-2. split the Vs into first (v1) and second (v2) at '/', second will be NA if there isn't a second V
+2. split the Vs into first (v1) and second (v2) at '/', second will be NA if there isn't a secondary V
 3. if there is a second V, add the TRBV prefix to the gene family-number
 4. use pivot longer on the v1 and v2 columns, this will create a separate entry for each V associated with a CDR3 + J + antigen combination
-5. remove any entries where the V is NA, these are extra entries created from clonotypes that didn't have second V genes
+5. remove any entries where the V is NA, these are extra entries created from clonotypes that didn't have secondary V genes
 6. reformat the gene labels for the V and Js by changing the TCRBV to TRBV and the TCRBJ to TRBJ and removing the 0 padding of the family/gene numbers
 
 ```{r reformat_immuneCODE}
@@ -154,7 +166,7 @@ immunecode.data %>% head()
 
 Formatting VDJdb to the same format is a little less effort as the gene names are already in IMGT format. 
 
-Here the adjustments are:
+For VDJdb the adjustments are:
 1. filter to only entries that include a TRB with V, J and CDR3 information
 2. restrict the species to humans as this reference includes TCRs from other species such as mice
 3. remove the alleles from the V and J
@@ -179,7 +191,7 @@ vdjdb.data <- read_tsv("tcr_ag_refs/vdjdb/vdjdb_full.txt") %>%
 vdjdb.data %>% head()
 ```
 
-Now that the immuneCODE and vdjdb clonotypes are in the same format we can combine into a single dataset. To avoid complications when using the dataset to annotate single cell data we only want a single entry for each unique clonotype. The same clonotype may have been reported by the two sources or it may be that the same clonotype has been mapped to multiple epitopes (cross-reactive TCR). If this is the case, the multiple sources/epitopes will be retained as a comma-separated list in the gene/antigen/source columns:
+Now that the immuneCODE and vdjdb clonotypes are in the same format we can combine into a single dataset. To avoid complications when using the dataset to annotate single cell data we only want a single entry for each unique clonotype. The same clonotype may have been reported by the two sources or it may be that the same clonotype has been mapped to multiple epitopes (i.e. a cross-reactive TCR). If this is the case, the multiple sources/epitopes will be retained as a comma-separated list in the gene/antigen/source columns:
 ```{r combining_immunecode_vdjdb}
 #combining the databases
 tcr.antigen.data <- bind_rows(immunecode.data %>% mutate(database = "immuneCODE"), 
@@ -199,7 +211,7 @@ How many clonotypes are in the set?
 tcr.antigen.data %>% nrow()
 ```
 
-A quick summary of the clonotypes and their antigens:
+A quick summary of the clonotypes and their associated antigens:
 ```{r antigen_summary}
 tcr.ag.tbl <- tcr.antigen.data %>% 
   group_by(antigen) %>%
@@ -217,7 +229,10 @@ write_tsv(tcr.antigen.data, "tcr_ag_refs/trb_antigens.tsv")
 
 No longer need the immuneCODE and vdjdb files used to build the reference. 
 
-Go back to 'Terminal' tab and remove the files that are no longer required
+Go back to 'Terminal' tab and remove the files that are no longer required:
+
+![](images/Terminal_tab_1.jpg)
+
 ```{bash remove_downloads}
 #on posit cloud
 #cd /cloud/project/
