@@ -38,7 +38,5 @@ Alternatives to IMGT exists for sets of germline genes to use for references. On
 
 ### Rhapsody V(D)J
 
-For Rhapsody data can use the VDJ_Dominant_Contigs_AIRR tab-delimited file(s) as a starting point for post-processing. The Rhapsody output already includes the allele level information for the nearest germline match and appears to use a recent version of the IMGT reference, however it lacks percent identity columns in the output that can be used for SHM levels. The % identity can be calculated from the available output as the sequence and germline strings are included, but can optionally re-run IgBLAST to get the output.
-
-To run IgBLAST, it is necessary to extract the sequences from the tab-delimited file and create FASTA file(s) for input to IgBLAST. An example of a [perl script]() to do this is available on the [github repository](https://github.com/kjlj/scRNA-seq_VDJ)
+Rhapsody data is already in a very similar tab-delimited format to what is acquired from post-processing the 10x contigs. Some brief notes [here](docs/rhapsofy_vdj.md).
 
