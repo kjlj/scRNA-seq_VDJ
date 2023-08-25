@@ -10,11 +10,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-Combing the metadata from the VDJ assay with the FindMarkers function for Seurat permits differential gene expression comparisons using the VDJ features such as expanded vs. unexpanded clones, comparing clones/clonotypes to each other, etc.
+Combing the metadata from the VDJ assay with the `FindMarkers()` function from `Seurat` permits differential gene expression (DGE) comparisons using the VDJ features such as expanded vs. unexpanded clones, comparing clones/clonotypes to each other, or comparing groups of cells with particular shared VDJ features like V isotype or germline gene usage.
 
 The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/dge_using_VDJ_features.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
-## R packages
+### Setting up R session
+
+### R packages
 
 For this need the Seurat package, the tidyverse packages, ggsci for colour pallettes and ggrepel for repelling labels from points on the 'volcano' plots.
 
@@ -58,7 +60,7 @@ if (sum(grepl("ggrepel", rownames(installed.packages()))) > 0) {
 library(ggrepel)
 ```
 
-## Themes for plotting
+### Themes for plotting
 
 Custom themes for ggplot2:
 ```{r plotting_themes}
