@@ -87,7 +87,9 @@ open -a TextEdit TRDV.fasta
 
 There is the option to not include the TRD and TRG as these are not amplified by the 10x primers (only targets the TRB and TRA constant regions), but best to have a complete reference set that can be used for all analysis. 
 
-Next, compile each gene type into a single files for Ig and TR. This uses the `cat` command which prints the contents of a file. By using this command with a wildcard (the \* means 'any character' so IG\*V will apply the `cat` command to the IGKV, IGHV and IGLV) and directing the output to a new file (cat by default prints to the screen, but adding the `>` symbol redirects this to the filename provided).
+Next, compile each gene type into a single files for Ig and TR. This is done using the `cat` command which prints the contents of a file. The command is called in a way that:
+- uses a wildcard to apply it to multiple files - the \* means 'any character' so IG\*V will apply the `cat` command to the IGKV, IGHV and IGLV
+- directs the the output to a new file - by default `cat` prints to standard out (generally your terminal), but adding the `>` symbol redirects this to the filename provided.
 ```
 #navigate to directory where the references were downloaded
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
@@ -104,7 +106,7 @@ cat TR*D.fasta > imgt_tr_d_human.fasta
 cat TR*J.fasta > imgt_tr_j_human.fasta
 ```
 
-Finally, to reformat the fasta description line to the format needed for IgBLAST, This uses the `edit_imgt_file,pl` that is provided as part of `IgBLAST`:
+Finally, the fasta description lines (the lines that start with '>') must be adjusted to the format needed for IgBLAST. This uses the `edit_imgt_file,pl` that is provided as part of `IgBLAST` to remove some of the details from the IMGT descriptions and retains just the gene name:
 ```
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
 
@@ -121,7 +123,7 @@ cd ~/data/apps/ncbi-igblast-1.21.0/references/
 #for f in *imgt*human.fasta; do echo $f; ../bin/edit_imgt_file.pl $f > ${f%.fasta}.fa; done;
 ```
 
-These fasta files now need to be converted to blast database file for use with `IgBLAST`. This conversion is done with `makeblastdb` from `IgBLAST`:
+These fasta files finally need to be converted to blast databases for use with `IgBLAST`. This conversion is done with `makeblastdb` from `IgBLAST`:
 ```
 #navigate to the directory with the FASTA formatted gene sets
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
@@ -151,7 +153,7 @@ rm *.fasta
 
 ## constant region references 
 
-Newer versions of `IgBLAST` align the constant region in addition to the V(D)J. The primers for 10x V(D)J amplicons sit within the first exon of each of the constant regions. For Ig this is the CH1 region and for TR this is termed EX1 region. 
+Newer versions of `IgBLAST` align the constant region in addition to the V(D)J. The primers for 10x V(D)J amplicons sit within the first exon of each of the constant regions therfore an identifiable constant region sequence is present in the VDJ sequences. For Ig this is the CH1 region and for TR this is termed the EX1 region. 
 
 For the Ig can obtain blast database formatted human constant region gene sets from [NCBI](https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database):
 ```
@@ -171,9 +173,9 @@ tar xvf ncbi_human_c_genes.tar
 rm ncbi_human_c_genes.tar
 ```
 
-Note, these are already in BLAST database format so ready to use with `IgBLAST`.
+Note, these are already in BLAST database format so ready to use with `IgBLAST` so nothing further to do.
 
-This database doesn't include the TR constant regions, so these need to be obtained from IMGT using the cut&paste method. 
+This database doesn't include the TR constant regions, so these need to be obtained from IMGT using the cut&paste method: 
 ```
 #navigate to the references directory
 cd ~/data/apps/ncbi-igblast-1.21.0/references/

@@ -1,6 +1,6 @@
-# running IgBLAST on contigs
+# Running IgBLAST on V(D)J contigs
 
-The IgBLAST command for Ig and TR differs.
+The `IgBLAST` command for Ig and TR differs as it requires the `-ig_seqtype` parameter.
 
 ## Ig contigs
 
@@ -12,7 +12,7 @@ cd ~/data/scRNA-seq_workshop/pbmcs/
 
 #IgBLAST requires the IGDATA environmental variable to be set
 export IGDATA=~/data/apps/ncbi-igblast-1.21.0/
-#can check with what IGDATA is get to with
+#can check what IGDATA is get to with
 #echo $IGDATA
 
 ##running IgBLAST against the Ig references

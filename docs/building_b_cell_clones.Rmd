@@ -20,7 +20,7 @@ Clustering must be undertaken for each individual as a clonal lineage can only e
 
 In the example datasets the pbmc and tumour samples are from different individuals so clones will be built separately. If 10x datasets includes multiple samples that require de-multiplexing via hashing antibodies or SNPs that the B cell V(D)J data must be subset before building clones. 
 
-An excellent resource for post-processing of 10x data including building clonal relationships can be found at [https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). This approach can be undertaken in R, but can also export data and use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) but this requires some additional coding to wrangle the cd-hit output into a format that can be joined to the `Cell Ranger` and `IgBLAST` cell barcode level information. There is some information available [here](https://github.com/kjlj/10x-VDJ_post-processing).
+An excellent resource for post-processing of 10x data including building clonal relationships can be found at on the   [Immcantation frameword site](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). It provides an approach can be undertaken in R, but can also export data and use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) but this requires some additional coding to wrangle the cd-hit output into a format that can be joined to the `Cell Ranger` and `IgBLAST` cell barcode level information. 
 
 The RScript for this workflow available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/building_b_cell_clones.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
@@ -321,7 +321,7 @@ write_tsv(bcr.cln.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_ce
 ```
 
 ## Next step
-Now move to [integrating VDJ with scRNA-seq data](https://kjlj.github.io/scRNA-seq_VDJ/docs/integrating_gex_vdj.html).
+Now move to [integrating VDJ with scRNA-seq data](https://kjlj.github.io/scRNA-seq_VDJ/docs/combining_GEX_and_VDJ.html).
 
 Go back to [merging cell ranger and IgBLAST data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html).
 

@@ -10,24 +10,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-For each dataset now have the V(D)J data from Cell Ranger (the filtered_contig_annotations.csv files) and IgBLAST (the igblast.tsv files). 
+For each dataset now have the V(D)J data from `Cell Ranger` (the filtered_contig_annotations.csv files) and `IgBLAST` (the igblast.tsv files). 
 
-Combining these files in R to summarise the paired chains for each cell. Running R in RStudio on [Posit cloud](https://posit.cloud/). After logging in, can create a new project and within the project a new RScript (joining_cellranger_igblast.R).
+These files will be combined in R to create a summary of the paired Ig and TR for each cell. R will be run in `RStudio IDE` on [Posit cloud](https://posit.cloud/) or can run on a local installation of R.
 
 The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
-## Working locally versus working on Posit Cloud
+## Setting up R session
+
+### Working locally versus working on Posit Cloud
 
 If working locally it may be of benefit to set the working directory at the start of your R session so that you can use relative file paths, this isn't required when using RStudio on Posit Cloud.
 
-Uncomment set working directory function and update the path to the location of your choice:
+Uncomment, by removing the `#` from the start of the line, to set the working directory using `setwd` updating the path to the required directory:
 ```{r set_working_dir}
 #setwd("~/Documents/GitHub/scRNA-seq_VDJ/")
 ```
 
-## R packages
+### R packages
 
-The [tidyverse collection](https://www.tidyverse.org/) of R packages will be used to manipulate the datasets. To install this package (if it is not already available) and then load:
+The [tidyverse collection](https://www.tidyverse.org/) of R packages will be used to manipulate the datasets. 
+
+Install this package (if it is not already available) and load it:
 ```{r install_packages}
 #check if the package is already installed, if not, install it
 if (sum(grepl("tidyverse", rownames(installed.packages()))) > 0) {
@@ -42,16 +46,16 @@ library(tidyverse)
 
 ## Loading datasets
 
-Loading the post-processed IgBLAST datasets from github repo for the B and T cell VDJ data for the PBMC  and Tumour samples. The Cell Ranger contig annotations are loaded from the 10x website. If these files have already been downloaded from github/10x the URLs can be replaced with the local file locations.
+The post-processed `IgBLAST` datasets for the B and T cell VDJ data for the PBMC and tumour samples can be loaded directly from [github repo](https://github.com/kjlj/scRNA-seq_VDJ). The `Cell Ranger` contig annotations files can be loaded directly from the 10x website. Alternatively, if working locally, these files can be downloaded and the URLs within the `read_tsv` can be replaced with the local file locations.
 
 ```{r loading_datasets}
 
 ### PBMC, loading the Ig and TR data
-pbmc.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_b_filtered_contig.ig.igblast.tsv")
-pbmc.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_t_filtered_contig.tr.igblast.tsv")
+pbmc.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_b_filtered_contig.ig.igblast.tsv.gz")
+pbmc.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_t_filtered_contig.tr.igblast.tsv.gz")
 ### tumour, loading the Ig and TR data
-tumour.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_b_filtered_contig.ig.igblast.tsv")
-tumour.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_t_filtered_contig.tr.igblast.tsv")
+tumour.b.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_b_filtered_contig.ig.igblast.tsv.gz")
+tumour.t.igblast <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/tumour/sc5p_v2_hs_melanoma_10k_t_filtered_contig.tr.igblast.tsv.gz")
 
 #loading the cell ranger contig annotations
 ### PBMCs
@@ -63,14 +67,16 @@ tumour.b.cellranger <- read_csv("https://cf.10xgenomics.com/samples/cell-vdj/4.0
 tumour.t.cellranger <- read_csv("https://cf.10xgenomics.com/samples/cell-vdj/4.0.0/sc5p_v2_hs_melanoma_10k/sc5p_v2_hs_melanoma_10k_t_filtered_contig_annotations.csv")
 ```
 
-Take a look at the data that has been loaded where each entry in the tibbles are for a contig. For example, a single contig from a cell is AAACCTGTCATATCGG-1_contig_1 where AAACCTGTCATATCGG-1 is the cell barcode. Note that for IgBLAST the contig label is in the sequence_id column, for cellranger it is in the contig_id column.
+The data loaded for both `IgBLAST` and `Cell Ranger` is formatted as a single entry/row for each VDJ contig. For example, a single contig from a cell is AAACCTGTCATATCGG-1_contig_1 where AAACCTGTCATATCGG-1 is the cell barcode. Note that for `IgBLAST` the contig label is in the 'sequence_id' column, for `Cell Ranger` it is in the 'contig_id' column.
 
-The IgBLAST data for the PBMC dataset, for glimpse the data is printed as the first few entries from each column on each line so you can get a 'glimpse' at the values in each column:
+`glimpse()` can be used to take a look at the data that has been loaded. It will display the tibble contents as the first few entries from each column on each line so you can get a 'glimpse' at the values in each column. 
+
+Viewing the `IgBLAST` data for the PBMC dataset with `glimpse()`
 ```{r view_loaded_datasets}
 pbmc.b.igblast %>% glimpse()
 ```
 
-The Cell Ranger data for the PMBC dataset:
+The `Cell Ranger` data for the PMBC dataset:
 ```{r view_loaded_datasets2}
 pbmc.b.cellranger %>% glimpse()
 ```
@@ -80,11 +86,11 @@ Alternative is to view in a tabular format, but cannot see all the columns:
 pbmc.b.igblast %>% head()
 ```
 
-## Merging the Cell Ranger and IgBLAST
+## Merging Cell Ranger and IgBLAST data
 
-The data for each contig can be joined using the contig_id in the sequence_id column for the IgBLAST and the contig_id column for Cell Ranger. 
+The data for each contig can be joined using the 'contig_id' in the `sequence_id` column for `IgBLAST` and the `contig_id` column for `Cell Ranger`. 
 
-As part of merging want to retain which columns were generated by IgBLAST and which were from Cell Ranger. This will be tracked by appending either _cellranger or _igblast to the column names. Some columns are excluded from the rename_with so those in the -c() will not have the suffix added. Not adding the _cellranger to contig_id & barcode from the cellranger tibble or for the sequence_id from the IgBLAST tibble:
+When merging the data we want to retain which columns were generated by `IgBLAST` and which were from `Cell Ranger`. This will be tracked by appending either `_cellranger` or `_igblast` to the column names. Some columns are excluded from the `rename_with()`; those in the `-c()` will not have the suffix added. We are not adding the `_cellranger` to contig_id and barcode columns from the `cellranger` tibble nor to the `sequence_id` from the `IgBLAST` tibble:
 ```{r merge_datasets}
 ## the tibbles are then joined by the contig_id (cellranger) and sequence_id (igblast) columns
 pbmc.b.data <- pbmc.b.cellranger %>% rename_with(~paste0(., "_cellranger"), -c("contig_id", "barcode")) %>%
@@ -104,20 +110,20 @@ tumour.t.data <- tumour.t.cellranger %>% rename_with(~paste0(., "_cellranger"), 
             by = c("contig_id" = "sequence_id"))
 ```
 
-Here is an example of the PBMC Ig data after joining the cellranger and IgBLAST:
+Here is an example of the PBMC Ig data after joining:
 ```{r view_merged_dataset}
 pbmc.b.data %>% glimpse()
 ```
-the other datasets can be viewed using the glimpse(), head() or View() functions.
+the other datasets can be viewed using the `glimpse()`, `head()` or `View()` functions.
 
 
-Optionally, can remove the original tibbles now that we have the merged objects. This can help save some memory.
+Optionally, to help save some memory, the original tibbles can now be removed. 
 ```{r removing_orig_inputs}
 rm(list = c("pbmc.b.cellranger", "pbmc.b.igblast", "pbmc.t.cellranger", "pbmc.t.igblast",
             "tumour.b.cellranger", "tumour.b.igblast", "tumour.t.cellranger", "tumour.t.igblast"))
 ```
 
-We can reduce from four to two datasets to process by joining the B cell data from the PBMCs and tumour sample to one datasets and the same for the T cells. A dataset column is added to keep track of which contigs are from which datasets as we cannot rely on the cell barcodes being unique between the two datasets:
+We can also reduce from four to two datasets by grouping the B cell data from the PBMCs and tumour sample to one datasets and the same for the T cells. A dataset column is added to keep track of which contigs are from which datasets as we cannot rely on the cell barcodes being unique between the two datasets:
 ```{r joining_datasets}
 #can join all the Ig data into single tibble, adding a "dataset" column to track whether pbmc or tumour sample
 b.data <- bind_rows(pbmc.b.data %>% mutate(dataset = "pbmc"),
@@ -137,7 +143,7 @@ And for the TR contigs:
 table(t.data$dataset)
 ```
 
-Taking a peek at the contents of the TR data after combining the PBMC and Tumour datasets:
+Taking a peek at the contents of the TR data after combining the PBMC and tumour datasets:
 ```{r view_joined_tr_data}
 t.data %>% glimpse()
 ```
@@ -150,9 +156,10 @@ rm(list = c("pbmc.b.data", "tumour.b.data",
 ```
 
 ## Processing the TR contigs
-There are TR contigs from TRA and TRB loci from each cell (ideally!). Start with some filtering of the contigs from each locus in order to drop non-productive (out-of-frame, stop codons), those without both a V and J gene, without defined CDR3. Then for each cell barcode the contigs are ranked by their UMI counts from the cell ranger data and finally a clonotype label that combines the V + J + CDR3AA is added for each contig.
 
-Starting with the TRA contigs that are selected based on the locus_igblast column:
+There are TR contigs for TRA and TRB loci for each cell (ideally!). Start with some filtering of the contigs from each locus in order to drop non-productive (out-of-frame, stop codons), those without both a V and J gene and contigs without defined CDR3. Then for each cell barcode the contigs are ranked by their UMI counts from the `Cell Ranger` data and finally a clonotype label that combines the V + J + CDR3AA is added for each contig.
+
+Starting with the TRA contigs that are selected based on the `locus_igblast` column:
 ```{r tra_filtering}
 tra.data <- t.data %>%
   filter(locus_igblast == "TRA") %>% #restrict to TRA chains
@@ -210,14 +217,14 @@ with(tcr.data, table(dataset))
 
 ```
 
-The tibble now contains TRA and TRB chains for each cell barcode with data from both the cellranger and igblast processing:
+The tibble now contains TRA and TRB chains for each cell barcode with data from both the `Cell Ranger` and `IgBLAST` processing:
 ```{r view_tr_data}
 tcr.data %>% glimpse()
 ```
 
 ## Processing the Ig contigs
 
-For the Ig there is IGH and then light chain can be either IGK or IGL, as want to pair heavy and light chains per cell, keep IGH and then pick a top chain from IGK/L after filtering applying similar filtering to the TR, but no clonotype label, instead will build clones at a later point as want to allow for SHM. The clone building is described <insert link here>.
+For the Ig there are heavy and light chains pair; IGH for heavy chains and either IGK or IGL for light chain. To pair heavy and light chains per cell, pick the top IGH and then pick a top chain from combined IGK/L.  Similar filtering to that used for the TR is applied, but no clonotype label is defined, instead we will build clones at a later point as want to allow for SHM. The clone building is described [here](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html), but requires we first complete the current workflow.
 
 Processing the IGH contigs to filter and rank contigs from each cell barcode:
 ```{r igh_filtering}
@@ -242,7 +249,7 @@ table(igh.data$dataset)
 ```
 
 
-For the light chains will use the data from both the IGK and IGL:
+For the light chains we will use the data from both the IGK and IGL:
 ```{r igkl_filtering}
 igkl.data <- b.data %>%
   filter(locus_igblast == "IGK" | locus_igblast == "IGL") %>% #keeping both IGK and IGL by allowing the locus columns to be IGK OR (|) IGL
@@ -263,7 +270,7 @@ table(igkl.data$dataset)
 ```
 
 
-For each cell going to join the IGH and IGK/L chain data (only keeping the top ranked contig from IGH and IGK/L per barcode):
+For each cell join the IGH and IGK/L chain data (only keeping the top ranked contig from IGH and IGK/L per barcode):
 ```{r joining_igh_igkl}
 bcr.data <- igh.data %>% 
   filter(contig_rnk_in_cln == 1) %>% #filtering the IGH data to only the top ranked contigs
@@ -275,7 +282,7 @@ bcr.data <- igh.data %>%
 with(bcr.data, table(dataset))
 ```
 
-The tibble now contains IGH and IGKL chains for each cell barcode with data from both the cellranger and igblast processing:
+The tibble now contains IGH and IGKL chains for each cell barcode with data from both the `Cell Ranger` and `IgBLAST` processing:
 ```{r view_ig_data}
 bcr.data %>% glimpse()
 ```
@@ -283,20 +290,24 @@ bcr.data %>% glimpse()
 
 ## Outputting datasets
 
-Saving the datasets in tab-delimited and RDS formats:
+Saving the datasets in tab-delimited and RDS formats. Uncomment the options required. Moving forward we will be utilising the B and T datasets that combine the PBMC and tumour datasets, but examples for saving separate files for each sample and for saving Rds rather than tab-delimited output are shown. 
 ```{r output_datasets}
 ## writing tab-delimited files
-write_tsv(bcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
-write_tsv(bcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
+#write_tsv(bcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv")
+#write_tsv(bcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_Ig_cellranger_igblast_pre-barcode.tsv")
 write_tsv(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
+## posit cloud save
+#write_tsv(bcr.data, "data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
 
-write_tsv(tcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
-write_tsv(tcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
+#write_tsv(tcr.data %>% filter(dataset == "pbmc"), "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_TR_cellranger_igblast_per-barcode.tsv")
+#write_tsv(tcr.data %>% filter(dataset == "tumour"), "~/Documents/GitHub/scRNA-seq_VDJ/data/tumour/tumour_TR_cellranger_igblast_pre-barcode.tsv")
 write_tsv(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
+#posit cloud save
+#write_tsv(tcr.data, "data/pbmc-tumour_TR_cellranger_igblast_per-barcode.tsv")
 
 ##writing R objects
-saveRDS(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/bcr_data.Rds")
-saveRDS(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/tcr_data.Rds")
+#saveRDS(bcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/bcr_data.Rds")
+#saveRDS(tcr.data, "~/Documents/GitHub/scRNA-seq_VDJ/data/tcr_data.Rds")
 ```
 
 ## Next step
