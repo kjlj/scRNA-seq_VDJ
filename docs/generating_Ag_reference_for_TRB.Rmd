@@ -137,7 +137,7 @@ immunecode.data <- bind_rows(immunecode.data1 %>% select(tcr = `TCR BioIdentity`
                names_to = "v_alt") %>% #want to create two separate entries for the different V genes, start by casting data longer
   filter(!(is.na(trbv))) %>% #remove the NAs, these are from entries that only had a single V gene
   select(-c(v_alt, tcr, v)) %>% #remove some of the extra columns generated
-  mutate(antigen = "SARS-COV-2", #flagging that all are COV2
+  mutate(antigen = "SARS-CoV-2", #flagging that all are COV2
          trbv = str_replace(trbv, "TCRBV0", "TRBV"), #the gene names use TCRBV rather than TRBV, also have leading 0 that aren't in IMGT gene labels
          trbv = str_replace(trbv, "TCRBV", "TRBV"), #fixing the TCRBV for genes without the leading 0
          trbv = str_replace(trbv, "-0", "-"), #there are also 0 padding the gene number that need to be removed to make IMGT labels
