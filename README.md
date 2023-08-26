@@ -21,8 +21,9 @@ The results of running the above steps are two tab-delimited files; one for the 
 
 These are the two files that we will use for integrating VDJ data with scRNA-seq data.
 
-[!Note]
-Do I really have to post-process the datasets? If working with T cell VDJ data only, then probably not, but for B cell VDJ data it is probably worth the effort.
+### Do I really have to post-process the datasets?
+
+If working with T cell VDJ data only, then probably not, but for B cell VDJ data it is probably worth the effort, but you don't *have* to!
 
 ## Integrating scRNA-seq and VDJ
 
