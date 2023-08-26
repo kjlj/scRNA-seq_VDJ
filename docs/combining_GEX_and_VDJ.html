@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-25" />
+<meta name="date" content="2023-08-26" />
 
 <title>Integrating GEX and VDJ</title>
 
@@ -350,7 +350,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Integrating GEX and VDJ</h1>
-<h4 class="date">2023-08-25</h4>
+<h4 class="date">2023-08-26</h4>
 
 </div>
 
@@ -486,7 +486,7 @@ VDJ data that we have previously summarised at the cell barcode level
 and the Seurat objects from the GEX analysis.</p>
 <p>For the T cell data we load the tab-delimited file output from <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html">joining
 the cellranger and IgBLAST data</a>, but for the B cells we will use the
-tab-delimied file from the <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">clone
+tab-delimited file from the <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">clone
 calling</a>.</p>
 <p>These files are available from the <a href="https://github.com/kjlj/scRNA-seq_VDJ">github repo</a> but have
 also been pre-loaded into Posit.cloud:</p>
@@ -531,11 +531,11 @@ tumour.seurat.obj &lt;- readRDS(&quot;../seurat_objects/tumour_seurat-without-VD
 dataset independently but they are now going to be united with the
 scRNA-seq data. This requires that for each dataset, each cell barcode
 has only a single entry - either B or T VDJ data. There shouldn’t be
-cells with both B and T VDJ for the same cell barcode, but doublets
-(which haven’t been filtered from the VDJ) can result in this
+cells with both B and T VDJ for the same cell barcode, but doublets,
+which haven’t been filtered from the VDJ, can result in this
 artifact.</p>
 <p>Cell barcodes that have both B and T VDJ data need to be identified
-and removed:</p>
+so that they can be removed:</p>
 <pre class="r"><code>#check for any cell barcodes that have both B and T cell data, likely to represent doublets and should be filtered
 dual.bt.summary &lt;- bind_rows(b.data %&gt;% 
                                select(barcode, dataset) %&gt;% 
@@ -575,13 +575,13 @@ table(t.data$dataset)</code></pre>
 ##   pbmc tumour 
 ##   5230   1889</code></pre>
 <pre class="r"><code>rm(dual.bt.summary)</code></pre>
-<p>There may also be cell barcodes for which there is VDJ data but the
-cell was removed from GEX during filtering. To harmonise the cell
-barcodes between the VDJ and GEX, and drop VDJ cell barcodes that don’t
-have data in the GEX datasets.</p>
-<p>To do this we need a list of the cell barcodes for the PBMC and
-tumour samples from the Seurat objects. This can be obtained by getting
-the rownames from the meta.data slot in the objects:</p>
+<p>There may also be VDJ cell barcodes for which there is no
+corresponding data in the scRNA-seq due to the cell being removed during
+filtering. We will drop VDJ cell barcodes that don’t have data in the
+GEX datasets.</p>
+<p>To remove the cells, we need a list of the cell barcodes for the PBMC
+and tumour samples from the Seurat objects. This can be obtained from
+the rownames of the meta.data slot in each of the objects:</p>
 <pre class="r"><code>#get the barcodes for the PBMCs
 pbmc.barcodes &lt;- tibble(barcode = rownames(pbmc.seurat.obj@meta.data)) %&gt;%
   mutate(dataset = &quot;pbmc&quot;,
@@ -659,7 +659,7 @@ with(b.data, table(dataset, isotype))</code></pre>
 ##   pbmc      30     7   12    0    32           0    15     5     0  731
 ##   tumour   197    52  345    1   240           4   168    45     1 3713</code></pre>
 <p>For the T cells, removing the cells that don’t have the barcodes in
-GEX, and then adding paired clonotype labels, clone size and whether or
+GEX, and then adding paired clonotype label, clone size and whether or
 not the cell is part of a clonal expansion:</p>
 <pre class="r"><code>#add additional fields to the t cell data
 t.data &lt;- t.data %&gt;%
@@ -686,8 +686,8 @@ with(t.data, table(dataset, t_expanded_cln))</code></pre>
 ## dataset  TRBC1 TRBC2
 ##   pbmc    2197  2787
 ##   tumour   602  1050</code></pre>
-<p>Ranks for the expanded clones/clonotypes can also be added (which #1
-being the largest clone/clonotype in the dataset):</p>
+<p>Ranks for the expanded clones/clonotypes can also be added (where #1
+is the largest clone/clonotype in the dataset):</p>
 <pre class="r"><code>## adding a rank for the clones/clonotypes
 b.cln.rnks &lt;- b.data %&gt;%
   filter(!(is.na(unq_clone_id))) %&gt;%
@@ -728,12 +728,11 @@ t.cln.rnks &lt;- t.data %&gt;%
 rm(t.cln.rnks)</code></pre>
 </div>
 <div id="adding-metadata-to-seurat-object" class="section level2">
-<h2>Adding metadata to seurat object</h2>
+<h2>Adding metadata to Seurat object</h2>
 <p>The B and T cell data can now be formatted to add to the Seurat
-objects for the scRNA-seq analysis from the GEX. The join will happen
-via the barcode and here we are selecting the subset of columns that
-want to add into the Seurat meta.data. This list can be amended as
-needed:</p>
+objects for the scRNA-seq analysis. The join will happen via the cell
+barcode and here we are selecting the subset of columns that want to add
+into the Seurat meta.data. This list can be amended as needed:</p>
 <pre class="r"><code>## this can be altered
 b.metadata &lt;- b.data %&gt;%
   select(barcode, dataset, v_igh, j_igh, v_igkl, j_igkl, unq_clone_id, bcr_paired, b_cln_rnk, b_expanded_cln,
@@ -875,8 +874,8 @@ plot(p1)</code></pre>
 rm(p1)
 gc()</code></pre>
 <pre><code>##             used   (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells   4427370  236.5    7368678  393.6         NA   7368678  393.6
-## Vcells 286009049 2182.1  415954430 3173.5     102400 325435526 2482.9</code></pre>
+## Ncells   4427463  236.5    7415444  396.1         NA   7415444  396.1
+## Vcells 286009997 2182.1  415955816 3173.5     102400 325510238 2483.5</code></pre>
 </div>
 <div id="plotting-outside-of-seurat" class="section level2">
 <h2>Plotting outside of Seurat</h2>
@@ -954,8 +953,8 @@ rm(list = c(&quot;tumour.seurat.meta&quot;, &quot;tumour.seurat.umap&quot;,
 #force garbage collection
 gc()</code></pre>
 <pre><code>##            used  (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells  4403712 235.2    7368678  393.6         NA   7368678  393.6
-## Vcells 17010323 129.8  332763544 2538.8     102400 325435526 2482.9</code></pre>
+## Ncells  4403814 235.2    7415444  396.1         NA   7415444  396.1
+## Vcells 17011286 129.8  332764653 2538.8     102400 325510238 2483.5</code></pre>
 <p>We now have greater control over the plotting and the format of the
 plots and as a bounus we have freed up a lot of memory by unloading the
 Seurat objects.</p>
@@ -1332,6 +1331,118 @@ write_tsv(seurat.data, &quot;../data/pbmc-tumour_seruat_data.tsv&quot;)
 ##save the b and t cell data that has the additional columns and filtering
 write_tsv(b.data, &quot;../data/pbmc-tumour_b_cells_vdj.tsv&quot;)
 write_tsv(t.data, &quot;../data/pbmc-tumour_t_cells_vdj.tsv&quot;)</code></pre>
+</div>
+<div id="adding-metadata-to-seurat-direct-from-cell-ranger-vdj" class="section level2">
+<h2>Adding metadata to Seurat direct from <code>Cell Ranger</code>
+VDJ</h2>
+<p>If you prefer not to post-process data and to use the
+<code>Cell Ranger</code> outputs directly here is how to add this
+meta.data to a Suerat object.</p>
+<p>The Seurat objects have been unloaded, so need to reload:</p>
+<pre class="r"><code>pbmc.seurat.obj &lt;- readRDS(&quot;../seurat_objects/pbmc_seurat-without-VDJ-genes-azimuth.rds&quot;)</code></pre>
+<p>Grab the filtered_contig_annotations.csv file from
+<code>Cell Ranger</code>:</p>
+<pre class="r"><code>pbmc.b.cellranger &lt;- read_csv(&quot;https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig_annotations.csv&quot;)</code></pre>
+<pre><code>## Rows: 2066 Columns: 18
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (11): barcode, contig_id, chain, v_gene, d_gene, j_gene, c_gene, cdr3, c...
+## dbl  (3): length, reads, umis
+## lgl  (4): is_cell, high_confidence, full_length, productive
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>pbmc.t.cellranger &lt;- read_csv(&quot;https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig_annotations.csv&quot;)</code></pre>
+<pre><code>## Rows: 10817 Columns: 18
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (11): barcode, contig_id, chain, v_gene, d_gene, j_gene, c_gene, cdr3, c...
+## dbl  (3): length, reads, umis
+## lgl  (4): is_cell, high_confidence, full_length, productive
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>The <code>Cell Ranger</code> data is per contig, need to change to
+per cell barcode before adding to Seurat object. To do this, going to
+filter T and B for contigs to the top chains by UMI for IGH + IGK/L and
+TRA + TRB, respectively:</p>
+<pre class="r"><code>pbmc.b.cellranger.reformat &lt;- pbmc.b.cellranger %&gt;%
+  filter(productive == TRUE) %&gt;%
+  mutate(chain_grp = ifelse(chain == &quot;IGH&quot;, &quot;igh&quot;, &quot;igkl&quot;)) %&gt;%
+  group_by(barcode, chain_grp) %&gt;%
+  mutate(chain_rnk = row_number(desc(umis))) %&gt;%
+  ungroup() %&gt;%
+  filter(chain_rnk == 1) %&gt;%
+  pivot_wider(id_cols = c(&quot;barcode&quot;, &quot;is_cell&quot;),
+              names_from = &quot;chain_grp&quot;,
+              values_from = -c(&quot;barcode&quot;, &quot;is_cell&quot;, &quot;chain_grp&quot;)) %&gt;%
+  mutate(is_paired_ig = ifelse(!(is.na(v_gene_igh)) &amp; !(is.na(v_gene_igkl)), TRUE, FALSE)) 
+
+pbmc.t.cellranger.reformat &lt;- pbmc.t.cellranger %&gt;%
+  filter(productive == TRUE) %&gt;%
+  mutate(chain_grp = ifelse(chain == &quot;TRA&quot;, &quot;tra&quot;, &quot;trb&quot;)) %&gt;%
+  group_by(barcode, chain_grp) %&gt;%
+  mutate(chain_rnk = row_number(desc(umis))) %&gt;%
+  ungroup() %&gt;%
+  filter(chain_rnk == 1) %&gt;%
+  pivot_wider(id_cols = c(&quot;barcode&quot;, &quot;is_cell&quot;),
+              names_from = &quot;chain_grp&quot;,
+              values_from = -c(&quot;barcode&quot;, &quot;is_cell&quot;, &quot;chain_grp&quot;)) %&gt;%
+  mutate(is_paired_tr = ifelse(!(is.na(v_gene_tra)) &amp; !(is.na(v_gene_trb)), TRUE, FALSE)) </code></pre>
+<p>Join the T and B cell data and remove any cells that have data for
+both B and T:</p>
+<pre class="r"><code>pbmc.cellranger.data &lt;- pbmc.b.cellranger.reformat %&gt;%
+  full_join(pbmc.t.cellranger.reformat, by = c(&quot;barcode&quot;, &quot;is_cell&quot;)) %&gt;%
+  mutate(dual_cell = ifelse(!(is.na(is_paired_ig)) &amp; !(is.na(is_paired_tr)), TRUE, FALSE)) %&gt;%
+  filter(dual_cell == FALSE) %&gt;%
+  mutate(vdj_cell_type = case_when(is.na(is_paired_ig) ~ &quot;T&quot;,
+                                   is.na(is_paired_tr) ~ &quot;B&quot;))
+
+table(pbmc.cellranger.data$vdj_cell_type)</code></pre>
+<pre><code>## 
+##    B    T 
+##  886 5232</code></pre>
+<p>Now, format as a data.frame with the cell barcodes as the row
+names:</p>
+<pre class="r"><code>pbmc.cellranger.dataframe &lt;- as.data.frame(pbmc.cellranger.data)
+rownames(pbmc.cellranger.dataframe) &lt;- pbmc.cellranger.dataframe$barcode
+pbmc.cellranger.dataframe &lt;- pbmc.cellranger.dataframe %&gt;% select(-c(barcode))</code></pre>
+<p>Finally, can add the metadata to the Seurat object:</p>
+<pre class="r"><code>pbmc.seurat.obj &lt;- AddMetaData(pbmc.seurat.obj, pbmc.cellranger.dataframe)
+
+colnames(pbmc.seurat.obj@meta.data)</code></pre>
+<pre><code>##  [1] &quot;orig.ident&quot;            &quot;nCount_RNA&quot;            &quot;nFeature_RNA&quot;         
+##  [4] &quot;nCount_SCT&quot;            &quot;nFeature_SCT&quot;          &quot;SCT_snn_res.0.8&quot;      
+##  [7] &quot;seurat_clusters&quot;       &quot;SCT_snn_res.0.7&quot;       &quot;SCT_snn_res.0.6&quot;      
+## [10] &quot;SCT_snn_res.0.5&quot;       &quot;SCT_snn_res.0.4&quot;       &quot;SCT_snn_res.0.3&quot;      
+## [13] &quot;SCT_snn_res.0.2&quot;       &quot;azimuth_l1&quot;            &quot;azimuth_l2&quot;           
+## [16] &quot;azimuth_l3&quot;            &quot;is_cell&quot;               &quot;contig_id_igkl&quot;       
+## [19] &quot;contig_id_igh&quot;         &quot;high_confidence_igkl&quot;  &quot;high_confidence_igh&quot;  
+## [22] &quot;length_igkl&quot;           &quot;length_igh&quot;            &quot;chain_igkl&quot;           
+## [25] &quot;chain_igh&quot;             &quot;v_gene_igkl&quot;           &quot;v_gene_igh&quot;           
+## [28] &quot;d_gene_igkl&quot;           &quot;d_gene_igh&quot;            &quot;j_gene_igkl&quot;          
+## [31] &quot;j_gene_igh&quot;            &quot;c_gene_igkl&quot;           &quot;c_gene_igh&quot;           
+## [34] &quot;full_length_igkl&quot;      &quot;full_length_igh&quot;       &quot;productive_igkl&quot;      
+## [37] &quot;productive_igh&quot;        &quot;cdr3_igkl&quot;             &quot;cdr3_igh&quot;             
+## [40] &quot;cdr3_nt_igkl&quot;          &quot;cdr3_nt_igh&quot;           &quot;reads_igkl&quot;           
+## [43] &quot;reads_igh&quot;             &quot;umis_igkl&quot;             &quot;umis_igh&quot;             
+## [46] &quot;raw_clonotype_id_igkl&quot; &quot;raw_clonotype_id_igh&quot;  &quot;raw_consensus_id_igkl&quot;
+## [49] &quot;raw_consensus_id_igh&quot;  &quot;chain_rnk_igkl&quot;        &quot;chain_rnk_igh&quot;        
+## [52] &quot;is_paired_ig&quot;          &quot;contig_id_tra&quot;         &quot;contig_id_trb&quot;        
+## [55] &quot;high_confidence_tra&quot;   &quot;high_confidence_trb&quot;   &quot;length_tra&quot;           
+## [58] &quot;length_trb&quot;            &quot;chain_tra&quot;             &quot;chain_trb&quot;            
+## [61] &quot;v_gene_tra&quot;            &quot;v_gene_trb&quot;            &quot;d_gene_tra&quot;           
+## [64] &quot;d_gene_trb&quot;            &quot;j_gene_tra&quot;            &quot;j_gene_trb&quot;           
+## [67] &quot;c_gene_tra&quot;            &quot;c_gene_trb&quot;            &quot;full_length_tra&quot;      
+## [70] &quot;full_length_trb&quot;       &quot;productive_tra&quot;        &quot;productive_trb&quot;       
+## [73] &quot;cdr3_tra&quot;              &quot;cdr3_trb&quot;              &quot;cdr3_nt_tra&quot;          
+## [76] &quot;cdr3_nt_trb&quot;           &quot;reads_tra&quot;             &quot;reads_trb&quot;            
+## [79] &quot;umis_tra&quot;              &quot;umis_trb&quot;              &quot;raw_clonotype_id_tra&quot; 
+## [82] &quot;raw_clonotype_id_trb&quot;  &quot;raw_consensus_id_tra&quot;  &quot;raw_consensus_id_trb&quot; 
+## [85] &quot;chain_rnk_tra&quot;         &quot;chain_rnk_trb&quot;         &quot;is_paired_tr&quot;         
+## [88] &quot;dual_cell&quot;             &quot;vdj_cell_type&quot;</code></pre>
+<p>Now the VDJ data is available for use using the <code>group.by</code>
+and <code>split.by</code> for many <code>Seurat</code> functions.</p>
 <p><a href="https://kjlj.github.io/scRNA-seq_VDJ">Return to main
 page.</a></p>
 </div>

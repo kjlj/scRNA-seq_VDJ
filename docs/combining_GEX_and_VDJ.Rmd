@@ -93,7 +93,7 @@ theme_x_rotated <- function (base_size = 12) {
 
 For each dataset - PBMC and tumour - we need to load the B and T cell VDJ data that we have previously summarised at the cell barcode level and the Seurat objects from the GEX analysis.
 
-For the T cell data we load the tab-delimited file output from [joining the cellranger and IgBLAST data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html), but for the B cells we will use the tab-delimied file from the [clone calling](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html). 
+For the T cell data we load the tab-delimited file output from [joining the cellranger and IgBLAST data](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html), but for the B cells we will use the tab-delimited file from the [clone calling](https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html). 
 
 These files are available from the [github repo](https://github.com/kjlj/scRNA-seq_VDJ) but have also been pre-loaded into Posit.cloud:
 ```{r loading_datasets}
@@ -119,9 +119,9 @@ tumour.seurat.obj <- readRDS("../seurat_objects/tumour_seurat-without-VDJ-genes-
 
 ## Filtering VDJ data
 
-Up until now we have treated the B and T VDJ data within the same dataset independently but they are now going to be united with the scRNA-seq data. This requires that for each dataset, each cell barcode has only a single entry - either B or T VDJ data. There shouldn't be cells with both B and T VDJ for the same cell barcode, but doublets (which haven't been filtered from the VDJ) can result in this artifact. 
+Up until now we have treated the B and T VDJ data within the same dataset independently but they are now going to be united with the scRNA-seq data. This requires that for each dataset, each cell barcode has only a single entry - either B or T VDJ data. There shouldn't be cells with both B and T VDJ for the same cell barcode, but doublets, which haven't been filtered from the VDJ, can result in this artifact. 
 
-Cell barcodes that have both B and T VDJ data need to be identified and removed:
+Cell barcodes that have both B and T VDJ data need to be identified so that they can be removed:
 ```{r filtering_dual_barcodes}
 #check for any cell barcodes that have both B and T cell data, likely to represent doublets and should be filtered
 dual.bt.summary <- bind_rows(b.data %>% 
@@ -159,9 +159,9 @@ rm(dual.bt.summary)
 ```
 
 
-There may also be cell barcodes for which there is VDJ data but the cell was removed from GEX during filtering. To harmonise the cell barcodes between the VDJ and GEX, and drop VDJ cell barcodes that don't have data in the GEX datasets. 
+There may also be VDJ cell barcodes for which there is no corresponding data in the scRNA-seq due to the cell being removed during filtering. We will drop VDJ cell barcodes that don't have data in the GEX datasets. 
 
-To do this we need a list of the cell barcodes for the PBMC and tumour samples from the Seurat objects. This can be obtained by getting the rownames from the meta.data slot in the objects:
+To remove the cells, we need a list of the cell barcodes for the PBMC and tumour samples from the Seurat objects. This can be obtained from the rownames of the meta.data slot in each of the objects:
 ```{r permitted_barcode_list}
 #get the barcodes for the PBMCs
 pbmc.barcodes <- tibble(barcode = rownames(pbmc.seurat.obj@meta.data)) %>%
@@ -222,7 +222,7 @@ with(b.data, table(dataset, isotype))
 ```
 
 
-For the T cells, removing the cells that don't have the barcodes in GEX, and then adding paired clonotype labels, clone size and whether or not the cell is part of a clonal expansion:
+For the T cells, removing the cells that don't have the barcodes in GEX, and then adding paired clonotype label, clone size and whether or not the cell is part of a clonal expansion:
 ```{r add_t_cell_data}
 #add additional fields to the t cell data
 t.data <- t.data %>%
@@ -243,7 +243,7 @@ with(t.data, table(dataset, t_expanded_cln))
 with(t.data, table(dataset, isotype))
 ```
 
-Ranks for the expanded clones/clonotypes can also be added (which #1 being the largest clone/clonotype in the dataset):
+Ranks for the expanded clones/clonotypes can also be added (where #1 is the largest clone/clonotype in the dataset):
 ```{r adding_cln_ranks}
 ## adding a rank for the clones/clonotypes
 b.cln.rnks <- b.data %>%
@@ -283,9 +283,9 @@ t.data <- t.data %>%
 rm(t.cln.rnks)
 ```
 
-## Adding metadata to seurat object
+## Adding metadata to Seurat object
 
-The B and T cell data can now be formatted to add to the Seurat objects for the scRNA-seq analysis from the GEX. The join will happen via the barcode and here we are selecting the subset of columns that want to add into the Seurat meta.data. This list can be amended as needed:
+The B and T cell data can now be formatted to add to the Seurat objects for the scRNA-seq analysis. The join will happen via the cell barcode and here we are selecting the subset of columns that want to add into the Seurat meta.data. This list can be amended as needed:
 ```{r selecting_cols_for_metadata}
 ## this can be altered
 b.metadata <- b.data %>%
@@ -845,5 +845,78 @@ write_tsv(seurat.data, "../data/pbmc-tumour_seruat_data.tsv")
 write_tsv(b.data, "../data/pbmc-tumour_b_cells_vdj.tsv")
 write_tsv(t.data, "../data/pbmc-tumour_t_cells_vdj.tsv")
 ```
+
+## Adding metadata to Seurat direct from `Cell Ranger` VDJ
+
+If you prefer not to post-process data and to use the `Cell Ranger` outputs directly here is how to add this meta.data to a Suerat object.
+
+The Seurat objects have been unloaded, so need to reload:
+```{r reloading_seurat_data}
+pbmc.seurat.obj <- readRDS("../seurat_objects/pbmc_seurat-without-VDJ-genes-azimuth.rds")
+```
+
+Grab the filtered_contig_annotations.csv file from `Cell Ranger`:
+```{r loading_cellranger_annotations}
+pbmc.b.cellranger <- read_csv("https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_b_filtered_contig_annotations.csv")
+pbmc.t.cellranger <- read_csv("https://cf.10xgenomics.com/samples/cell-vdj/5.0.0/sc5p_v2_hs_PBMC_10k/sc5p_v2_hs_PBMC_10k_t_filtered_contig_annotations.csv")
+```
+
+The `Cell Ranger` data is per contig, need to change to per cell barcode before adding to Seurat object. To do this, going to filter T and B for contigs to the top chains by UMI for IGH + IGK/L and TRA + TRB, respectively:
+```{r barcode_summary_cellranger}
+pbmc.b.cellranger.reformat <- pbmc.b.cellranger %>%
+  filter(productive == TRUE) %>%
+  mutate(chain_grp = ifelse(chain == "IGH", "igh", "igkl")) %>%
+  group_by(barcode, chain_grp) %>%
+  mutate(chain_rnk = row_number(desc(umis))) %>%
+  ungroup() %>%
+  filter(chain_rnk == 1) %>%
+  pivot_wider(id_cols = c("barcode", "is_cell"),
+              names_from = "chain_grp",
+              values_from = -c("barcode", "is_cell", "chain_grp")) %>%
+  mutate(is_paired_ig = ifelse(!(is.na(v_gene_igh)) & !(is.na(v_gene_igkl)), TRUE, FALSE)) 
+
+pbmc.t.cellranger.reformat <- pbmc.t.cellranger %>%
+  filter(productive == TRUE) %>%
+  mutate(chain_grp = ifelse(chain == "TRA", "tra", "trb")) %>%
+  group_by(barcode, chain_grp) %>%
+  mutate(chain_rnk = row_number(desc(umis))) %>%
+  ungroup() %>%
+  filter(chain_rnk == 1) %>%
+  pivot_wider(id_cols = c("barcode", "is_cell"),
+              names_from = "chain_grp",
+              values_from = -c("barcode", "is_cell", "chain_grp")) %>%
+  mutate(is_paired_tr = ifelse(!(is.na(v_gene_tra)) & !(is.na(v_gene_trb)), TRUE, FALSE)) 
+```
+
+Join the T and B cell data and remove any cells that have data for both B and T:
+```{r join_t_b_cellranger}
+pbmc.cellranger.data <- pbmc.b.cellranger.reformat %>%
+  full_join(pbmc.t.cellranger.reformat, by = c("barcode", "is_cell")) %>%
+  mutate(dual_cell = ifelse(!(is.na(is_paired_ig)) & !(is.na(is_paired_tr)), TRUE, FALSE)) %>%
+  filter(dual_cell == FALSE) %>%
+  mutate(vdj_cell_type = case_when(is.na(is_paired_ig) ~ "T",
+                                   is.na(is_paired_tr) ~ "B"))
+
+table(pbmc.cellranger.data$vdj_cell_type)
+```
+
+
+Now, format as a data.frame with the cell barcodes as the row names:
+```{r formatting_cellranger_VDJ_metadata}
+pbmc.cellranger.dataframe <- as.data.frame(pbmc.cellranger.data)
+rownames(pbmc.cellranger.dataframe) <- pbmc.cellranger.dataframe$barcode
+pbmc.cellranger.dataframe <- pbmc.cellranger.dataframe %>% select(-c(barcode))
+
+```
+
+Finally, can add the metadata to the Seurat object:
+```{r add_cellranger_VDJ_to_seurat}
+pbmc.seurat.obj <- AddMetaData(pbmc.seurat.obj, pbmc.cellranger.dataframe)
+
+colnames(pbmc.seurat.obj@meta.data)
+```
+
+Now the VDJ data is available for use using the `group.by` and `split.by` for many `Seurat` functions.
+
 
 [Return to main page.](https://kjlj.github.io/scRNA-seq_VDJ)
