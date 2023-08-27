@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-26" />
+<meta name="date" content="2023-08-27" />
 
 <title>Integrating GEX and VDJ</title>
 
@@ -350,7 +350,7 @@ display: none;
 
 
 <h1 class="title toc-ignore">Integrating GEX and VDJ</h1>
-<h4 class="date">2023-08-26</h4>
+<h4 class="date">2023-08-27</h4>
 
 </div>
 
@@ -874,8 +874,8 @@ plot(p1)</code></pre>
 rm(p1)
 gc()</code></pre>
 <pre><code>##             used   (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells   4427463  236.5    7415444  396.1         NA   7415444  396.1
-## Vcells 286009997 2182.1  415955816 3173.5     102400 325510238 2483.5</code></pre>
+## Ncells   4427463  236.5    7415434  396.1         NA   7415434  396.1
+## Vcells 286009997 2182.1  415955816 3173.5     102400 325510254 2483.5</code></pre>
 </div>
 <div id="plotting-outside-of-seurat" class="section level2">
 <h2>Plotting outside of Seurat</h2>
@@ -953,8 +953,8 @@ rm(list = c(&quot;tumour.seurat.meta&quot;, &quot;tumour.seurat.umap&quot;,
 #force garbage collection
 gc()</code></pre>
 <pre><code>##            used  (Mb) gc trigger   (Mb) limit (Mb)  max used   (Mb)
-## Ncells  4403814 235.2    7415444  396.1         NA   7415444  396.1
-## Vcells 17011286 129.8  332764653 2538.8     102400 325510238 2483.5</code></pre>
+## Ncells  4403814 235.2    7415434  396.1         NA   7415434  396.1
+## Vcells 17011286 129.8  332764653 2538.8     102400 325510254 2483.5</code></pre>
 <p>We now have greater control over the plotting and the format of the
 plots and as a bounus we have freed up a lot of memory by unloading the
 Seurat objects.</p>

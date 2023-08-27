@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-26" />
+<meta name="date" content="2023-08-27" />
 
 <title>Creating a reference for annotating TCR specificity</title>
 
@@ -351,7 +351,7 @@ display: none;
 
 <h1 class="title toc-ignore">Creating a reference for annotating TCR
 specificity</h1>
-<h4 class="date">2023-08-26</h4>
+<h4 class="date">2023-08-27</h4>
 
 </div>
 
@@ -428,9 +428,11 @@ curl -L -O https://github.com/antigenomics/vdjdb-db/releases/download/2023-06-01
 ## 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
 ## 
-  8 10.1M    8  895k    0     0   922k      0  0:00:11 --:--:--  0:00:11  922k
-100 10.1M  100 10.1M    0     0  5381k      0  0:00:01  0:00:01 --:--:-- 9937k</code></pre>
+  0 10.1M    0  4257    0     0   3046      0  0:58:01  0:00:01  0:58:00  3046
+ 41 10.1M   41 4306k    0     0  1989k      0  0:00:05  0:00:02  0:00:03 5602k
+100 10.1M  100 10.1M    0     0  3562k      0  0:00:02  0:00:02 --:--:-- 6855k</code></pre>
 <p>The database files are distributed as a zip archive, so uncompress
 it:</p>
 <pre class="bash"><code>cd tcr_ag_refs/vdjdb/
@@ -463,8 +465,9 @@ curl -O https://adaptivepublic.blob.core.windows.net/publishedproject-supplement
 ## 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
- 11 3766k   11  447k    0     0   311k      0  0:00:12  0:00:01  0:00:11  312k
-100 3766k  100 3766k    0     0  1608k      0  0:00:02  0:00:02 --:--:-- 1610k</code></pre>
+ 16 3766k   16  607k    0     0   341k      0  0:00:11  0:00:01  0:00:10  341k
+ 90 3766k   90 3391k    0     0  1258k      0  0:00:02  0:00:02 --:--:-- 1258k
+100 3766k  100 3766k    0     0  1354k      0  0:00:02  0:00:02 --:--:-- 1355k</code></pre>
 <p>As for vdjdb, the files come in a zip archive that needs to be
 ‘unzipped’, but we also need to move the files out of the sub-directory
 they uncompress to:</p>

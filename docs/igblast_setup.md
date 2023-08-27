@@ -1,4 +1,4 @@
-# Setting up IgBLAST 
+# Setting up `IgBLAST` 
 
 Instructions for installation are available [here](https://ncbi.github.io/igblast/cook/How-to-set-up.html). At time of writing the current version is v1.21. Installation packages for various operating systems can be found at [https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/](https://ftp.ncbi.nih.gov/blast/executables/igblast/release/LATEST/).
 
@@ -20,17 +20,17 @@ tar xzvf ncbi-igblast-1.21.0-x64-macosx.tar.gz
 rm ncbi-igblast-1.21.0-x64-macosx.tar.gz
 ```
 
-## VDJ reference sets for IgBLAST
+## VDJ reference databases for `IgBLAST`
 
-To use `IgBLAST` it is necessary to obtain V, D, J and C germline gene sequences for the relevant species. Human germline gene references sets can be obtained from the [IMGT Reference Directory](https://www.imgt.org/vquest/refseqh.html). 
+To use `IgBLAST` it is necessary to obtain V, D, J and C germline gene sequences for your species of interest. Human germline gene references sets can be obtained from the [IMGT Reference Directory](https://www.imgt.org/vquest/refseqh.html). 
 
-For each chain gene type (V, D, J, C) need to create a single file for the Ig and another for the TR that combines all the genes from the different loci. For example, for Ig V genes, need to collect all the V genes from IGH, IGK and IGL together into a single fasta file. Similarly, for the TR the V genes from TRA, TRB, TRG and TRD need to be compiled into a file (could ignore the G/D for 10x VDJ as these are not enriched in the VDJ assay). 
+For each chain gene type (V, D, J, C) need to create a single file for the Ig and another for the TR that combines all the genes from the different loci. For example, for Ig V genes, need to collect all the V genes from IGH, IGK and IGL together into a single FASTA file. Similarly, for the TR the V genes from TRA, TRB, TRG and TRD need to be compiled into a file. For 10x data, you could ignore the TRG/D for as there are no primers for these at the VDJ enrichment step in the 10x assay. 
 
-The description lines for the files obtained from IMGT need to be edited to have the gene name proximal to the '>'. `IgBLAST` provides a script for this. 
+The description lines for the files obtained from IMGT need to be edited to have the gene name next to to the '>', for example, >IGHV1-69*01. `IgBLAST` provides a script for this. 
 
 The example below is for human Ig and TR genes.
 
-First, download the fasta files from IMGT:
+First, download the FASTA files from IMGT:
 ```
 #nagivate to the folder where IgBLAST is located
 cd ~/data/apps/ncbi-igblast-1.21.0/

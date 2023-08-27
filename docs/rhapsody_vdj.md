@@ -46,4 +46,4 @@ grep -c ">" *.fasta
 
 IgBLAST can then be run on the `VDJ_Dominant_Contigs_AIRR_IG.fasta` and `VDJ_Dominant_Contigs_AIRR_TR.fasta` as described [here](running_igblast.md).
 
-[Return to main page](../README.md)
+[Return to main page](https://kjlj.github.io/scRNA-seq_VDJ/index.html)
