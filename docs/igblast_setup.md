@@ -90,6 +90,7 @@ There is the option to not include the TRD and TRG as these are not amplified by
 Next, compile each gene type into a single files for Ig and TR. This is done using the `cat` command which prints the contents of a file. The command is called in a way that:
 - uses a wildcard to apply it to multiple files - the \* means 'any character' so IG\*V will apply the `cat` command to the IGKV, IGHV and IGLV
 - directs the the output to a new file - by default `cat` prints to standard out (generally your terminal), but adding the `>` symbol redirects this to the filename provided.
+ß
 ```
 #navigate to directory where the references were downloaded
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
