@@ -18,7 +18,7 @@ The RScript for this workflow is available on [github](https://raw.githubusercon
 
 ### R packages
 
-For this need the Seurat package, the tidyverse packages, ggsci for colour pallettes and ggrepel for repelling labels from points on the 'volcano' plots.
+For this need the [Seurat](https://github.com/satijalab/seurat) package, the [tidyverse](https://www.tidyverse.org/) packages, [ggsci](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html) for colour palettes and [ggrepel](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html) for repelling labels from data points on the 'volcano' plots.
 
 ```{r loading_r_packages}
 #packages
@@ -87,7 +87,7 @@ theme_x_rotated <- function (base_size = 12) {
 
 ## Loading datasets
 
-Loading the seurat object plus the metadata:
+Loading the Seurat object plus the metadata:
 ```{r loading_dataset}
 #loading seurat object
 tumour.seurat.obj <- readRDS("../seurat_objects/tumour_seurat-without-VDJ-genes-azimuth.rds")
@@ -96,7 +96,7 @@ tumour.seurat.obj <- readRDS("../seurat_objects/tumour_seurat-without-VDJ-genes-
 seurat.data <- read_tsv("../data/pbmc-tumour_seruat_data.tsv")
 ```
 
-Adding metadata to the seurat object:
+Adding metadata to the Seurat object:
 ```{r adding_metadata}
 #add the metadata to seurat object
 metadata <- as.data.frame(seurat.data %>% filter(dataset == "tumour"))
@@ -108,7 +108,7 @@ tumour.seurat.obj <- AddMetaData(tumour.seurat.obj, metadata)
 
 ## Comparing gene markers between different groups of cells
 
-Quick plot of some of the annotation on the UMAP:
+Quick plot of some of the Azimuth annotation on the UMAP:
 ```{r quick_umap}
 #umap of T subsets cells by Azimuth annotation
 azimuth_levels <- c(unique(seurat.data$azimuth_l2)[grepl("^CD[4|8]", unique(seurat.data$azimuth_l2))], "MAIT", "Treg")
@@ -132,9 +132,9 @@ p1 <- ggplot(seurat.data,
 print(p1)
 ```
 
-The FindMarkers function from the Seurat package can be used for comparing gene expression between groups of cells. 
+The `FindMarkers()` function from the Seurat package can be used for comparing gene expression between groups of cells. 
 
-We have the T cell annotation from Azimuth, so can use this to do a basic comparison between cells from the naive and central memory populations within the CD4s. To do this the FindMarkers function is called with 'azimuth_l2' as the grouping and then ident.1 and ident.2 are used to set the labels for the azimuth_l2 that are to be compared, here ident.1 is set to "CD4 Naive" and ident.2 to the "CD4 TCM":
+We have the T cell annotation from Azimuth, so can use this to do a basic comparison between cells from the naive and central memory populations within the CD4s. To do this the `FindMarkers()` function is called with 'azimuth_l2' as the grouping (is the `group.by` argument) and then `ident.1` and `ident.2` are used to set the labels for the azimuth_l2 that are to be compared, here `ident.1` is set to "CD4 Naive" and `ident.2` to the "CD4 TCM":
 ```{r markers_1}
 cd4naive.vs.cd4tcm.markers <- FindMarkers(tumour.seurat.obj,  
                                           group.by = "azimuth_l2", 
@@ -148,7 +148,7 @@ cd4naive.vs.cd4tcm.markers %>%
   head()
 ```
 
-In addition to the tabular format, can use the output to create volcano plots:
+In addition to the tabular format, we can use the output to create volcano-style plots:
 ```{r volcano_1}
 #show as a volcano plot
 p1 <- ggplot(cd4naive.vs.cd4tcm.markers, 
@@ -165,7 +165,7 @@ p1 <- ggplot(cd4naive.vs.cd4tcm.markers,
 plot(p1)  
 ```
 
-An example of comparing the expanded versus singleton clones within the T cells. To do this we used the t_expanded_cln column as the group.by and ident.1 and ident.2 as 'expanded' and 'singleton', respectively.
+Next we will explore an example comparing the expanded versus singleton clones within the T cells. To do this we used the 't_expanded_cln' column as the `group.by` and `ident.1` and `ident.2` as 'expanded' and 'singleton', respectively.
 ```{r markers2}
 #can compare expanded versus singleton clones
 texp.vs.tsingle.markers <- FindMarkers(tumour.seurat.obj,  
@@ -198,7 +198,7 @@ plot(p1)
 ```
 
 
-Can take this to the level of comparing individual clones to other groups of cells. The largest T cell clone in the tumour is only 7 cells, but there are instances where you have may have very large expansions to compare. In this case, using the t_cln_rnk to compare the top clone to the second largest clone, but can use the paired_clontypes if had labels for particular clones of interest:
+We can also take this to the level of comparing individual clones to other groups of cells. The largest T cell clone in the tumour is only 7 cells, but there are instances where you have may have very large expansions to compare. Here, we are using the 't_cln_rnk' column to compare the top clone (`ident.1 = "1"`) to the second largest clone (`ident.2 = "2"`), but you can use the 'paired_clonotypes' to specify labels for particular clones of interest for comparison:
 ```{r markers3}
 no1.vs.no2.markers <- FindMarkers(tumour.seurat.obj,  
                                        group.by = "t_cln_rnk", 
@@ -212,9 +212,11 @@ no1.vs.no2.markers %>%
   filter(p_val_adj < 0.05) %>% 
   head()
 ```
-No markers to differential the top 2 T cell clonotypes were found.
+No markers to differentiate between the top 2 T cell clonotypes were found.
 
-The comparison need not be limited to one vs one, can use vectors for ident.1 and ident.2 to create groups that span multiple categories. For example, sticking with t_cln_rnk but now grouping the top 2 clonotypes (ident.1 = c("1", "2")) and comparing those clonotypes ranked between 3 - 5 (ident.2 = c("3", "5")):
+The comparison need not be limited to one vs one. You can use vectors for `ident.1` and `ident.2` to create groups that span multiple categories with the feature. 
+
+For example, sticking with `t_cln_rnk` feature (column) but grouping the top 2 clonotypes (`ident.1 = c("1", "2")`) and comparing those to clonotypes ranked between 3 - 5 (`ident.2 = c("3", "5")`):
 ```{r markers4}
 ## this will compare the clones ranked 1 and 2 with those ranked 3 - 5
 grp1.vs.grp2.markers <- FindMarkers(tumour.seurat.obj,  
@@ -229,9 +231,11 @@ grp1.vs.grp2.markers %>%
   filter(p_val_adj < 0.05) %>% 
   head()
 ```
-In this case, there were not genes that differentiate the clonotypes groups.
+In this case, there were not genes that differentiate the clonotype groups.
 
-Can use any of the metadata columns, for example, can compare the gene expression between B cells that utilise different VH genes in their IGHs. To do so, v_igh becomes the group.by and two IGHV genes are specified for ident.1 and ident.2. In this case, comparing IGHV1-69 expressing B cells to those utilising IGHV3-23:
+Any of the metadata columns that contain categorical data can be used, for example, we can compare the gene expression between B cells that utilise different IGVH genes. 
+
+To do so, 'v_igh' becomes the `group.by` and two IGHV genes are specified for `ident.1` and `ident.2`. In this case, we are comparing IGHV1-69 expressing B cells to those utilising IGHV3-23:
 ```{r markers5}
 vgene1.vs.vgene2.markers <- FindMarkers(tumour.seurat.obj,  
                                     group.by = "v_igh", 

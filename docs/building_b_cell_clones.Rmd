@@ -12,15 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 For the T cells the clonotype labels have already been created by joining the V, J and CDR3AA sequence. 
 
-This workflow uses the [IMGT CDR3 definition](https://www.imgt.org/IMGTScientificChart/Numbering/IMGTIGVLsuperfamily.html) which excludes the 104-Cys and 118-Phe/Tyr. There are other CDR3 definitions that incorporate these residues. The equivalent 'CDR3' can be obtained fro, the junction and junction_aa columns reported by `IgBLAST` which will include the anchor residues.
+This workflow uses the [IMGT CDR3 definition](https://www.imgt.org/IMGTScientificChart/Numbering/IMGTIGVLsuperfamily.html) which excludes the 104-Cys and 118-Phe/Tyr. There are other CDR3 definitions that incorporate these residues. The equivalent 'CDR3' can be obtained from the `junction` and `junction_aa` columns reported by `IgBLAST` which will include the anchor residues.
 
-As the B cell chains undergo somatic hypermutation (SHM) need to use a method for defining clonal groups that permits grouping of similar but not exact sequences.  Hierarchical clustering of the Ig sequences CDR3 sequence is one approach used to identify groups of cells that carry sequences that are derived from the same original progenitor B cell. These cells will carry heavy and light chains with similar nucleotide sequences that have diverged due to the accumulation of point mutations. 
+As the B cell chains undergo somatic hypermutation (SHM) we need to use a method for defining clonal groups that permits grouping of similar but not exact sequences.  Hierarchical clustering of the Ig sequences CDR3 sequence is one approach used to identify groups of cells that carry sequences that may be derived from the same original progenitor B cell but which have diverged over time due to SHM.
 
-Clustering must be undertaken for each individual as a clonal lineage can only exist within a single individual. Similar Igs from different individuals are 'convergent' antibodies, that may have arisen from response to the same antigen, rather than 'divergent' members of the same clone. The same type of clustering can be used to explore convergence (also known as public clones) in antibody responses but this is in addition to building clonal lineages within an individual's immune response.
+Clustering must be undertaken for each individual as a clonal lineage can only exist within a single person. Similar Igs from different individuals are 'convergent', similar Abs in different individuals that may have arisen from response to the same antigen, rather than 'divergent' members of the same clone. The same type of clustering can be used to explore convergence (also known as public clones) in antibody responses but this is in addition to building clonal lineages within an individual's immune response.
 
-In the example datasets the pbmc and tumour samples are from different individuals so clones will be built separately. If 10x datasets includes multiple samples that require de-multiplexing via hashing antibodies or SNPs that the B cell V(D)J data must be subset before building clones. 
+In the example datasets the PMBC and tumour samples are from different individuals so clones will be built separately. If a 10x dataset includes multiple samples from different individuals that require de-multiplexing via hashing antibodies or SNPs then the B cell V(D)J data must be subset for the different individuals before building clones. 
 
-An excellent resource for post-processing of 10x data including building clonal relationships can be found at on the   [Immcantation framework site](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). It provides an approach can be undertaken in R, but can also export data and use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) but this requires some additional coding to wrangle the cd-hit output into a format that can be joined to the `Cell Ranger` and `IgBLAST` cell barcode level information. 
+An excellent resource for post-processing of 10x data including building clonal relationships can be found at on the [Immcantation framework site](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). It provides an approach that can be undertaken in R. You can use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) outside of R but this requires some additional coding to wrangle the `cd-hit` output into a format that can be joined to the `Cell Ranger` and `IgBLAST` cell barcode level information. 
 
 The RScript for this workflow available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/building_b_cell_clones.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
@@ -103,9 +103,9 @@ theme_x_rotated <- function (base_size = 12) {
 
 ## Datasets
 
-This workflow uses the Ig dataset that was output from [previous workflow](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html) or the [joining_cellranger_igblast.R](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) script. The tab-delimited output file ([pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv)) that contains the Ig VDJ data for the PBMC and tumour datasets is hosted on the [github repository](https://github.com/kjlj/scRNA-seq_VDJ).
+This workflow uses the Ig dataset that was output from [previous workflow](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html). The tab-delimited output file ([pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv)) that contains the Ig VDJ data for the PBMC and tumour datasets is hosted on the [github repository](https://github.com/kjlj/scRNA-seq_VDJ).
 
-The data will be loaded from the githib repo, but can alternatively be loaded locally by changing to a file path rather than a URL within the `read_tsv` function:
+The data will be loaded from the githib repo, but can alternatively be loaded locally by changing to a file path within the `read_tsv()` function:
 ```{r loading_datasets}
 #loading the B cell post-processed data
 bcr.data <- read_tsv("https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmc-tumour_Ig_cellranger_igblast_per-barcode.tsv")
@@ -126,11 +126,11 @@ tumour.data %>% nrow()
 
 ## Set the clustering threshold
 
-Before performing the hierarchical clustering the clustering threshold needs to be defined. This is done by comparing the pairwise [hamming distance](https://en.wikipedia.org/wiki/Hamming_distance) between sequences in a dataset to find each sequences nearest distance. This should result in a bimodal distribution that defines 'clones' (sequences very near to each other) and 'unrelated' (sequences more distant from each other). 
+Before performing the hierarchical clustering the threshold needs to be defined. This is done by comparing the pairwise [hamming distance](https://en.wikipedia.org/wiki/Hamming_distance) between sequences in a dataset to find each sequence's hamming distance to its nearest neighbour (the sequence with the lowest hamming distance). This should result in a bimodal distribution that defines 'clones' (sequences very near to each other) and 'unrelated' (sequences more distant from each other). 
 
 For this, we can use the IGH data. 
 
-The `SHazaM` package expects `IgBLAST` column names in their orignal format so we need to extract those columns and rename them to remove the `_iglbast_igh` suffix that we appended previously:
+The `SHazaM` package expects `IgBLAST` column names in their original format so we need to extract those columns and rename them to remove the `_iglbast_igh` suffix that we appended previously:
 ```{r igh_shazam_format}
 ## the shazam package uses the IgBLAST columns, so can just select those and rename appropriately
 pbmc.igh.data <- pbmc.data %>% 
@@ -149,7 +149,7 @@ Check that the column names are as expected:
 pbmc.igh.data %>% glimpse()
 ```
 
-For each sequence, add the hamming distance to its nearest neighbour using the `distToNearest` function:
+For each sequence, add the hamming distance to its nearest neighbour using the `distToNearest()` function:
 ```{r add_nearest_dists}
 #add the distance to the nearest other heavy chain in the dataset to the tibbles
 pbmc.igh.data <- distToNearest(pbmc.igh.data, nproc = 1)
@@ -159,7 +159,7 @@ tumour.igh.data <- distToNearest(tumour.igh.data, nproc = 1)
 summary(pbmc.igh.data$dist_nearest)
 ```
 
-Plotting the distances to look for the valley between the bimodal distribution that should provide a threshold between 'clonal' and 'unrelated' sequences:
+Plot the distances to look for the valley between the bimodal distribution that should provide a threshold between 'clonal' and 'unrelated' sequences:
 ```{r plotting_nearest_dists_pbmc}
 #plotting the distribution
 pbmc.dist.p1 <- ggplot(pbmc.igh.data %>% filter(!is.na(dist_nearest)),
@@ -181,7 +181,7 @@ pbmc.dist.p1 <- pbmc.dist.p1 +
 plot(pbmc.dist.p1)
 ```
 
-Now, repeat the process for the IGH from the tumour dataset:
+Repeat the process for the IGH from the tumour dataset:
 ```{r plotting_nearest_dists_tumour}
 #plotting distribution for the tumour sample
 tumour.dist.p1 <- ggplot(tumour.igh.data %>% filter(!is.na(dist_nearest)),
@@ -216,7 +216,7 @@ threshold
 
 ## Building the clones within each dataset
 
-To run the `SCOPer` clone building in 'single-cell' mode need to reformat the tibble to have the igh and igkl for each cell barcode as separate rows:
+To run the `SCOPer` clone building in 'single-cell' mode we need to reformat the tibble to have the igh and igkl for each cell barcode as separate rows:
 ```{r refomat_set_for_cln_building}
 pbmc.igkl.data <- pbmc.data %>% 
   select(barcode, sequence_id = contig_id_igkl, ends_with("_igblast_igkl")) %>%
@@ -238,7 +238,7 @@ These tibbles will now have two entries for any cell barcodes that had paired ch
 pbmc.input %>% glimpse()
 ```
 
-The clones will be generated using the `hierarchicalClones` function from the `SCOPer` package. This function will add a 'clone_id' column to the tibble and entries that share the same 'clone_id' are considered members of the same clonal lineage:
+The clones will be generated using the `hierarchicalClones()` function from the `SCOPer` package. This function will add a 'clone_id' column to the tibble and entries that share the same 'clone_id' are considered members of the same clonal lineage:
 ```{r build_clones}
 #add the clone id columns for PBMC
 pbmc.input <- hierarchicalClones(pbmc.input, 
@@ -264,7 +264,7 @@ tumour.input <- hierarchicalClones(tumour.input,
 
 ```
 
-Extract the clone IDs so that they can be added to the original tibble that summarises the `IgBLAST` and `Cell Ranger` for each cell barcode:
+Extract the clone IDs so that they can be added to the original tibble that summarises the `IgBLAST` and `Cell Ranger` data for each cell barcode:
 ```{r extract_cln_ids}
 #extract the clone_id and add back to the main tibble
 pbmc.clns <- pbmc.input %>%
@@ -293,7 +293,7 @@ bcr.cln.data <- bcr.data %>%
 bcr.data %>% nrow() == bcr.cln.data %>% nrow()
 ```
 
-As PBMC and tumour data are in same tibble, the clone_ids are not unique as the same 'clone_ID' can be in both datasets. To avoid possible issues during analysis, create a unique clone ID by combining the 'dataset' and 'clone_ID' values together in a new label:
+As PBMC and tumour data are in same tibble, the clone_ids are not unique as the same 'clone_id' can be in both datasets. To avoid possible issues during analysis, create a unique clone ID by combining the 'dataset' and 'clone_id' values together in a new label:
 ```{r add_unq_cln_id}
 #add a unique labels for the clns that is the clone_id + dataset
 bcr.cln.data <- bcr.cln.data %>%

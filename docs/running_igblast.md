@@ -1,10 +1,10 @@
-# Running IgBLAST on V(D)J contigs
+# Running `IgBLAST` on V(D)J contigs
 
-The `IgBLAST` command for Ig and TR differs as it requires the `-ig_seqtype` parameter.
+The `IgBLAST` command for Ig and TR differs as it requires the `-ig_seqtype` parameter to be set to either **Ig** or **TCR**.
 
 ## Ig contigs
 
-Running IgBLAST on Ig:
+Running `IgBLAST` on Ig:
 ```
 #for the PBMCs
 ## navigate to the directory where the 10x data was downloaded
@@ -44,7 +44,7 @@ cd ~/data/scRNA-seq_workshop/tumour/
 
 ## TR contigs
 
-Running IgBLAST on TR:
+Running `IgBLAST` on TR contigs:
 ```
 #for the PBMCs
 ## navigate to directory for the PBMC data

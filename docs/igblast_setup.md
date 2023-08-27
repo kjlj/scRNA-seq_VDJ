@@ -71,7 +71,7 @@ curl -O https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/H
 curl -O https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/TR/TRDJ.fasta
 ```
 
-The TRAV and TRDV genes are interspersed within the [same locus](https://www.imgt.org/IMGTrepertoire/index.php?section=LocusGenes&repertoire=locus&species=human&group=TRA). A subset of the genes are able to rearranged with both TRAJ and TRDJ genes are therefore considered part of both. These V genes have names such as TRAV14/DV4\*01 meaning that this gene segment is either TRAV14 or TRDV4 depending on the paired J gene. These genes will be duplicated when the TR V genes are later collected into a single file. BLAST databases cannot included duplicated genes (based on the gene name, gene sequences can be duplicated as long as the names are different) therefore these genes need to be removed prior to this step. 
+The TRAV and TRDV genes are interspersed within the [same locus](https://www.imgt.org/IMGTrepertoire/index.php?section=LocusGenes&repertoire=locus&species=human&group=TRA). A subset of the genes are able to rearrange with both TRAJ and TRDJ genes. These V genes have names such as TRAV14/DV4\*01 meaning that this gene segment is either TRAV14 or TRDV4 depending on whether the paired J gene is TRAJ or TRDJ. These genes are listed in both the TRAV and TRDJ fasta file and will become duplicated when the TR V genes are later collected into a single file. BLAST databases cannot included duplicated genes (based on the gene name, gene sequences can be duplicated as long as the names are different) therefore these genes need to be removed prior to this step. 
 
 There are many options for doing this, but the simplest is to open the file in a suitable text editor and manually delete:
 ```
@@ -85,11 +85,11 @@ open -a TextEdit TRDV.fasta
 # save the file
 ```
 
-There is the option to not include the TRD and TRG as these are not amplified by the 10x primers (only targets the TRB and TRA constant regions), but best to have a complete reference set that can be used for all analysis. 
+For working with 10x VDJ data the TRD and TRG could be left out of the TR reference databases as these are not amplified by the 10x T cell VDJ enrichment primers, but the above provides for a complete reference set that can be used for any TCR analysis. 
 
 Next, compile each gene type into a single files for Ig and TR. This is done using the `cat` command which prints the contents of a file. The command is called in a way that:
-- uses a wildcard to apply it to multiple files - the \* means 'any character' so IG\*V will apply the `cat` command to the IGKV, IGHV and IGLV
-- directs the the output to a new file - by default `cat` prints to standard out (generally your terminal), but adding the `>` symbol redirects this to the filename provided.
+- uses a wildcard to apply it to multiple files - the \* means 'any character' so IG\*V.fasta will apply the `cat` command to the IGKV.fasta, IGHV.fasta and IGLV.fasta
+- directs the the output to a new file - by default `cat` prints to standard out (generally your terminal), but adding the `>` redirects output to the file name provided.
 
 ```
 #navigate to directory where the references were downloaded
@@ -107,7 +107,7 @@ cat TR*D.fasta > imgt_tr_d_human.fasta
 cat TR*J.fasta > imgt_tr_j_human.fasta
 ```
 
-Finally, the fasta description lines (the lines that start with '>') must be adjusted to the format needed for IgBLAST. This uses the `edit_imgt_file,pl` that is provided as part of `IgBLAST` to remove some of the details from the IMGT descriptions and retains just the gene name:
+Finally, the fasta description lines (the lines that start with '>') must be adjusted to the format needed for `IgBLAST`. This is done with the `edit_imgt_file,pl` that is provided as part of `IgBLAST` which removes some of the details from the IMGT descriptions but retains the gene name:
 ```
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
 
@@ -123,8 +123,12 @@ cd ~/data/apps/ncbi-igblast-1.21.0/references/
 #or, one line version
 #for f in *imgt*human.fasta; do echo $f; ../bin/edit_imgt_file.pl $f > ${f%.fasta}.fa; done;
 ```
+The 'one line version' uses bash scripting to call the `edit_imgt_file.pl` script on each of the imgt_[ig|tr]_[v|d|j]_human.fasta files. For each file in the current directory that matches `*imgt*human.fasta` it will:
+- `for f in *imgt*human.fasta` - works through each file that matches the regex and saves it to the variable f, the file name can then be accessed as $f
+- `echo $f` - prints the file name to the terminal
+- `../bin/edit_imgt_file.pl $f > ${f%.fasta}.fa` - calls the perl script `../bin/edit_imgt_file.pl` on the file name in `$f` and then directs the output to `${f%.fasta}.fa` which is using taking the string in `$f` and deleting `.fasta` from it, after the `${f%.fasta}` is used to remove the `.fasta` a new file extension, `.fa`, is added to the file. This means the output file has the same name as the input file with the extension of '.fa' rather than '.fasta'
 
-These fasta files finally need to be converted to blast databases for use with `IgBLAST`. This conversion is done with `makeblastdb` from `IgBLAST`:
+The FASTA files finally need to be converted to BLAST databases for use with `IgBLAST`. This conversion is done with `makeblastdb` from `IgBLAST`:
 ```
 #navigate to the directory with the FASTA formatted gene sets
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
@@ -142,7 +146,7 @@ cd ~/data/apps/ncbi-igblast-1.21.0/references/
 #for f in imgt_*_human.fa; do echo $f; ../bin/makeblastdb -parse_seqids -dbtype nucl -in $f; done;
 ```
 
-Optionally, the directory can be cleaned up to remove the intermediate files and keep only the BLAST databases that are needed for `IgBLAST`:
+Optionally, the directory can now be cleaned up to remove the intermediate files and keep only the BLAST databases that are needed for `IgBLAST`:
 ```
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
 
@@ -152,11 +156,11 @@ rm *.fa
 rm *.fasta
 ```
 
-## constant region references 
+## Constant region references 
 
-Newer versions of `IgBLAST` align the constant region in addition to the V(D)J. The primers for 10x V(D)J amplicons sit within the first exon of each of the constant regions therfore an identifiable constant region sequence is present in the VDJ sequences. For Ig this is the CH1 region and for TR this is termed the EX1 region. 
+Newer versions of `IgBLAST` align the constant region in addition to the V(D)J. The primers for 10x V(D)J amplicons sit within the first exon of each of the constant regions therefore an identifiable constant region sequence is present in the VDJs. For Ig this is the CH1 region and for TR it is the EX1 region. 
 
-For the Ig can obtain blast database formatted human constant region gene sets from [NCBI](https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database):
+For the Ig we can obtain BLAST database formatted Human constant region gene sets from [NCBI](https://ftp.ncbi.nih.gov/blast/executables/igblast/release/database):
 ```
 #navigate to the reference directory
 cd ~/data/apps/ncbi-igblast-1.21.0/references/
@@ -174,9 +178,9 @@ tar xvf ncbi_human_c_genes.tar
 rm ncbi_human_c_genes.tar
 ```
 
-Note, these are already in BLAST database format so ready to use with `IgBLAST` so nothing further to do.
+Note, these are already in BLAST database format and are ready to use with `IgBLAST`.
 
-This database doesn't include the TR constant regions, so these need to be obtained from IMGT using the cut&paste method: 
+The database from NCBI doesn't include the TR constant regions. These need to be obtained from IMGT using a cut&paste method: 
 ```
 #navigate to the references directory
 cd ~/data/apps/ncbi-igblast-1.21.0/references/

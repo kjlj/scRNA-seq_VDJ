@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-25" />
+<meta name="date" content="2023-08-27" />
 
 <title>Joining Cell Ranger and IgBLAST VDJ outputs</title>
 
@@ -349,21 +349,20 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Joining Cell Ranger and IgBLAST VDJ
-outputs</h1>
-<h4 class="date">2023-08-25</h4>
+<h1 class="title toc-ignore">Joining <code>Cell Ranger</code> and
+<code>IgBLAST</code> VDJ outputs</h1>
+<h4 class="date">2023-08-27</h4>
 
 </div>
 
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>For each dataset now have the V(D)J data from
+<p>For each dataset we now have the V(D)J data from
 <code>Cell Ranger</code> (the filtered_contig_annotations.csv files) and
 <code>IgBLAST</code> (the igblast.tsv files).</p>
-<p>These files will be combined in R to create a summary of the paired
-Ig and TR for each cell. R will be run in <code>RStudio IDE</code> on <a href="https://posit.cloud/">Posit cloud</a> or can run on a local
-installation of R.</p>
+<p>These files will be combined in <code>R</code> to create a summary of
+the paired Ig and TR for each cell.</p>
 <p>The RScript for this workflow is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R">github</a>
 in the <a href="https://github.com/kjlj/scRNA-seq_VDJ">workshop
 respository</a>.</p>
@@ -371,7 +370,7 @@ respository</a>.</p>
 <div id="setting-up-r-session" class="section level2">
 <h2>Setting up R session</h2>
 <div id="working-locally-versus-working-on-posit-cloud" class="section level3">
-<h3>Working locally versus working on Posit Cloud</h3>
+<h3>Working locally versus working on <code>Posit Cloud</code></h3>
 <p>If working locally it may be of benefit to set the working directory
 at the start of your R session so that you can use relative file paths,
 this isn’t required when using RStudio on Posit Cloud.</p>
@@ -413,8 +412,8 @@ library(tidyverse)</code></pre>
 VDJ data for the PBMC and tumour samples can be loaded directly from <a href="https://github.com/kjlj/scRNA-seq_VDJ">github repo</a>. The
 <code>Cell Ranger</code> contig annotations files can be loaded directly
 from the 10x website. Alternatively, if working locally, these files can
-be downloaded and the URLs within the <code>read_tsv</code> can be
-replaced with the local file locations.</p>
+be downloaded and the local file locations provided to the
+<code>read_tsv()</code>function.</p>
 <pre class="r"><code>### PBMC, loading the Ig and TR data
 pbmc.b.igblast &lt;- read_tsv(&quot;https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/data/pbmcs/sc5p_v2_hs_PBMC_10k_b_filtered_contig.ig.igblast.tsv.gz&quot;)</code></pre>
 <pre><code>## Rows: 2066 Columns: 111
@@ -649,7 +648,7 @@ values in each column.</p>
 ## $ umis             &lt;dbl&gt; 68, 43, 51, 90, 47, 22, 80, 18, 14, 18, 26, 30, 59, 6…
 ## $ raw_clonotype_id &lt;chr&gt; &quot;clonotype9&quot;, &quot;clonotype701&quot;, &quot;clonotype701&quot;, &quot;clonot…
 ## $ raw_consensus_id &lt;chr&gt; &quot;clonotype9_consensus_1&quot;, &quot;clonotype701_consensus_2&quot;,…</code></pre>
-<p>Alternative is to view in a tabular format, but cannot see all the
+<p>Alternatively, can view in a tabular format, but cannot see all the
 columns:</p>
 <pre class="r"><code>pbmc.b.igblast %&gt;% head()</code></pre>
 <pre><code>## # A tibble: 6 × 111
@@ -670,7 +669,7 @@ columns:</p>
 ## #   c_alignment_start &lt;dbl&gt;, c_alignment_end &lt;dbl&gt;, …</code></pre>
 </div>
 <div id="merging-cell-ranger-and-igblast-data" class="section level2">
-<h2>Merging Cell Ranger and IgBLAST data</h2>
+<h2>Merging <code>Cell Ranger</code> and <code>IgBLAST</code> data</h2>
 <p>The data for each contig can be joined using the ‘contig_id’ in the
 <code>sequence_id</code> column for <code>IgBLAST</code> and the
 <code>contig_id</code> column for <code>Cell Ranger</code>.</p>
@@ -1000,13 +999,13 @@ rm(list = c(&quot;pbmc.b.data&quot;, &quot;tumour.b.data&quot;,
 <div id="processing-the-tr-contigs" class="section level2">
 <h2>Processing the TR contigs</h2>
 <p>There are TR contigs for TRA and TRB loci for each cell (ideally!).
-Start with some filtering of the contigs from each locus in order to
-drop non-productive (out-of-frame, stop codons), those without both a V
-and J gene and contigs without defined CDR3. Then for each cell barcode
-the contigs are ranked by their UMI counts from the
+We begin by filtering the contigs from each locus in order to drop
+non-productive (out-of-frame, stop codons), those without both a V and J
+genes called and contigs without defined CDR3. Then for each cell
+barcode the contigs are ranked by their UMI counts from the
 <code>Cell Ranger</code> data and finally a clonotype label that
 combines the V + J + CDR3AA is added for each contig.</p>
-<p>Starting with the TRA contigs that are selected based on the
+<p>Starting with the TRA contigs which are selected based on the
 <code>locus_igblast</code> column:</p>
 <pre class="r"><code>tra.data &lt;- t.data %&gt;%
   filter(locus_igblast == &quot;TRA&quot;) %&gt;% #restrict to TRA chains
@@ -1339,12 +1338,13 @@ processing:</p>
 </div>
 <div id="processing-the-ig-contigs" class="section level2">
 <h2>Processing the Ig contigs</h2>
-<p>For the Ig there are heavy and light chains pair; IGH for heavy
-chains and either IGK or IGL for light chain. To pair heavy and light
-chains per cell, pick the top IGH and then pick a top chain from
+<p>For the Ig there are heavy and light chain pairs; IGH for the heavy
+chain and either IGK or IGL for the light chain. To pair heavy and light
+chains per cell, we will pick the top IGH and then pick a top chain from
 combined IGK/L. Similar filtering to that used for the TR is applied,
 but no clonotype label is defined, instead we will build clones at a
-later point as want to allow for SHM. The clone building is described <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">here</a>,
+later point as want to allow for SHM.</p>
+<p>The clone building is described <a href="https://kjlj.github.io/scRNA-seq_VDJ/docs/building_b_cell_clones.html">here</a>,
 but requires we first complete the current workflow.</p>
 <p>Processing the IGH contigs to filter and rank contigs from each cell
 barcode:</p>
@@ -1677,7 +1677,7 @@ with data from both the <code>Cell Ranger</code> and
 <p>Saving the datasets in tab-delimited and RDS formats. Uncomment the
 options required. Moving forward we will be utilising the B and T
 datasets that combine the PBMC and tumour datasets, but examples for
-saving separate files for each sample and for saving Rds rather than
+saving separate files for each sample and for saving RDS rather than
 tab-delimited output are shown.</p>
 <pre class="r"><code>## writing tab-delimited files
 #write_tsv(bcr.data %&gt;% filter(dataset == &quot;pbmc&quot;), &quot;~/Documents/GitHub/scRNA-seq_VDJ/data/pbmcs/pbmc_Ig_cellranger_igblast_per-barcode.tsv&quot;)

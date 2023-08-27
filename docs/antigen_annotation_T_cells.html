@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-25" />
+<meta name="date" content="2023-08-27" />
 
 <title>Annotating TCRs for Antigen Specificity</title>
 
@@ -351,7 +351,7 @@ display: none;
 
 <h1 class="title toc-ignore">Annotating TCRs for Antigen
 Specificity</h1>
-<h4 class="date">2023-08-25</h4>
+<h4 class="date">2023-08-27</h4>
 
 </div>
 
@@ -375,10 +375,11 @@ respository</a>.</p>
 </div>
 <div id="setting-up-r-session" class="section level2">
 <h2>Setting up R session</h2>
-<div id="rpackages" class="section level3">
-<h3>Rpackages</h3>
-<p>Using two packages; the tidyverse collection for the data
-manipulation and ggsci for colour palettes.</p>
+<div id="r-packages" class="section level3">
+<h3>R packages</h3>
+<p>Using two packages; the <a href="https://www.tidyverse.org/">tidyverse collection</a> for the data
+manipulation and <a href="https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html">ggsci</a>
+for colour palettes.</p>
 <pre class="r"><code>#loading R packages
 #tidyverse packages for data manipulation and plotting
 #check if the package is already installed, if not, install it
@@ -475,13 +476,14 @@ a paired clonotype label that combines the TRB:TRA.</p>
 <p>To join the single cell data with the antigen data, we will first
 need to extract the TRB clonotype from the paired_clonotype and then
 join with the antigen data using a left_join.</p>
-<p>Note that the antigen data was already collasped so that each unique
+<p>Note that the antigen data was already collapsed so that each unique
 TRB is listed only once with the epitopes/antigens/source appended in
 comma delimited lists. This is necessary to ensure a one-to-one or
 many-to-one relationship when doing the left_join. If there are multiple
-matches in the antigen data (ie, one-to-many or many-to-many) the
+matches in the antigen data (i.e., one-to-many or many-to-many) the
 entries in the <code>seurat.data</code> will become duplicated for each
-match and the data will no longer be one entry for cell barcode.</p>
+match and the data will no longer be one entry for each cell
+barcode.</p>
 <pre class="r"><code>#we are focussing on TRB chain so will be joining the TRB clonotype from 10x with the TRB clonotype from the Ags
 seurat.data &lt;- seurat.data %&gt;%
   mutate(trb_clonotype = ifelse(grepl(&quot;TRBV&quot;, paired_clonotype), 

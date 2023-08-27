@@ -18,9 +18,9 @@ The RScript for this workflow is available on [github](https://raw.githubusercon
 
 ## Setting up R session
 
-### Rpackages 
+### R packages 
 
-Using two packages; the tidyverse collection for the data manipulation and ggsci for colour palettes.
+Using two packages; the [tidyverse collection](https://www.tidyverse.org/) for the data manipulation and [ggsci](https://cran.r-project.org/web/packages/ggsci/vignettes/ggsci.html) for colour palettes.
 
 ```{r packages}
 
@@ -97,7 +97,7 @@ Currently, the TCR clonotype for the single cell data is formatted as a paired c
 
 To join the single cell data with the antigen data, we will first need to extract the TRB clonotype from the paired_clonotype and then join with the antigen data using a left_join. 
 
-Note that the antigen data was already collasped so that each unique TRB is listed only once with the epitopes/antigens/source appended in comma delimited lists. This is necessary to ensure a one-to-one or many-to-one relationship when doing the left_join. If there are multiple matches in the antigen data (ie, one-to-many or many-to-many) the entries in the `seurat.data` will become duplicated for each match and the data will no longer be one entry for cell barcode.
+Note that the antigen data was already collapsed so that each unique TRB is listed only once with the epitopes/antigens/source appended in comma delimited lists. This is necessary to ensure a one-to-one or many-to-one relationship when doing the left_join. If there are multiple matches in the antigen data (i.e., one-to-many or many-to-many) the entries in the `seurat.data` will become duplicated for each match and the data will no longer be one entry for each cell barcode.
 
 ```{r annotating_ag_specificity}
 #we are focussing on TRB chain so will be joining the TRB clonotype from 10x with the TRB clonotype from the Ags
