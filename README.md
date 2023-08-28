@@ -1,5 +1,7 @@
 # scRNA-seq workshop
 
+Slides for the scVDJ-seq session of the scRNA-seq workshop are available at [https://kjlj.github.io/scRNA-seq_VDJ/docs/scVDJ_seq_session_31Aug23_KJLJ.pdf](https://kjlj.github.io/scRNA-seq_VDJ/docs/scVDJ_seq_session_31Aug23_KJLJ.pdf).
+
 ## IgBLAST post-processing of 10x contigs
 
 `Cell Ranger` output does not include allele level gene assignment and doesn't provide information about identity to the germline gene that is needed for calculating somatic hypermutation (SHM) levels for the B cell datasets. To obtain this extra level of detail the contigs from 10x VDJ are re-aligned against the [IMGT reference directory](https://www.imgt.org/vquest/refseqh.html) using [IgBLAST](https://ncbi.github.io/igblast/). To get tab-delimited [AIRR-C format](https://docs.airr-community.org/en/stable/datarep/overview.html) for the VDJ alignments we will use the stand-alone version of `IgBLAST` rather than the [web-based version](https://www.ncbi.nlm.nih.gov/igblast/igblast.cgi).
