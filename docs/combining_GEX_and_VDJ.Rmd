@@ -541,9 +541,11 @@ plot(ggarrange(pbmc.shm.umap.p2, tumour.shm.umap.p2, nrow = 2))
 ```
 
 
-We can build more complex panels using `ggplot2` and `ggpubr`. For example, visualising the SHM of the B cells on UMAPs and displaying with a quantification of the SHM% for clones for each isotype with statistics:
-```{r b_cell_shm_panel, fig.height = 6, fig.width = 8, fig.align = "center"}
-## isotype order by xsome location
+We can build more complex panels using `ggplot2` and `ggpubr`. For example, visualising the SHM of the B cells on UMAPs and displaying with a quantification of the SHM% for clones for each isotype with statistics.
+
+Start with a summary of the SHM for each cell for each isotype in the two datasets:
+```{r b_cell_shm_panel, fig.height = 3.5, fig.width = 5, fig.align = "center"}
+## isotype order by chromosome location
 isotype_order <- c("IGHM", "IGHD", "IGHG3", "IGHG1", "IGHA1", "IGHG2", "IGHG4", "IGHE", "IGHA2")
 
 ##combining the datasets and adding the isotype levels
@@ -563,8 +565,11 @@ shm.summary.p1 <- ggplot(seurat.data %>% filter(vdj_cell_type == "B"),
        y = "VH SHM %") +
   scale_colour_aaas() +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-#plot(shm.summary.p1)
+plot(shm.summary.p1)
+```
 
+Adding p-values to determine if there is any difference in the mean SHM between the PBMC and tumour B cells for the different isotypes. This can be done with the `rstatix` package which offers a variety of different tests and then formats the output for plotting on `ggplot2` with `ggpubr` functions. This call is a little more complex because of how the data is grouped:
+```{r b_cell_shm_panel2, fig.height = 3.5, fig.width = 5, fig.align = "center"}
 #adding stats for difference between isotype SHM means
 shm.summary.stats <- seurat.data %>% 
   filter(vdj_cell_type == "B") %>% #only using data from B cells by VDJ
@@ -577,6 +582,12 @@ shm.summary.stats <- seurat.data %>%
   mutate(group1 = isotype_fac,
          group2 = isotype_fac) #adjust groups to get values in correct position on panel
 
+#print
+shm.summary.stats %>% head()
+```
+
+Can now add the p-values to the panel using the `stat_pvalue_manual()` function by specifying the tibble that contains out test results (have adjusted to only display p-values that are significant):
+```{r b_cell_shm_panel3, fig.height = 3.5, fig.width = 5, fig.align = "center"}
 #add these to the panel using ggpubr function stat_pvalue_manual
 shm.summary.p2 <- ggplot(seurat.data %>% filter(vdj_cell_type == "B"), 
                          aes(x = isotype_fac, y = vh_mut)) +
@@ -585,20 +596,23 @@ shm.summary.p2 <- ggplot(seurat.data %>% filter(vdj_cell_type == "B"),
   geom_point(aes(colour = dataset, group = dataset),
              position = position_dodge(width = 0.9)) +
   stat_pvalue_manual(data = shm.summary.stats, label.size = 3,
-                     hide.ns = FALSE) +
+                     hide.ns = TRUE) +
   theme_x_rotated() +
   labs(x = "isotype subclass",
        y = "VH SHM %",
        caption = "p-values: Wilcoxon, bonf adjusted") +
   scale_colour_aaas() +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-#plot(shm.summary.p2)
+plot(shm.summary.p2)
+```
 
+Finally, can use `ggarrange()` from `ggpubr` to combine the panels into a single figure panel:
+```{r b_cell_shm_panel4, fig.height = 8, fig.width = 11, fig.align = "center"}
 plot(ggarrange(ggarrange(pbmc.shm.umap.p1, tumour.shm.umap.p1, nrow = 1),
                shm.summary.p2, nrow = 2, ncol = 1))
 ```
 
-Exploring the extent of clone/clonotype expansion in the different datasets:
+Exploring the extent of clone/clonotype expansion in the different datasets by building up a figure panel. Starting with a UMAP showing the expanded and singleton clones for the samples:
 ```{r clonal_exp_panel, fig.height = 7, fig.width = 11, fig.align = "center"}
 exp.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   geom_point(data = seurat.data %>% filter(is.na(vdj_cell_type)),
@@ -620,7 +634,11 @@ exp.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   scale_colour_npg(name = "expansions") +
   guides(colour = guide_legend(override.aes = list(size = 5)))
 #exp.umap.p1
+```
 
+Next make stacked barplot to summarise the proportion of clones that are expanded for B cells in each sample, along with the % of cells that are in expansions versus singleton clones:
+```{r clonal_exp_panel2, fig.height = 5, fig.width = 7, fig.align = "center"}
+##summarise
 b.expanded.clns.summary <- b.data %>%
   group_by(dataset, b_expanded_cln) %>%
   summarise(cell_cnt = length(barcode),
@@ -630,7 +648,7 @@ b.expanded.clns.summary <- b.data %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt),
          cln_prop = cln_cnt / sum(cln_cnt)) %>%
   ungroup()
-#b.expanded.clns.summary
+b.expanded.clns.summary %>% head()
 
 b.exp.p1 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -652,7 +670,11 @@ b.exp.p2 <- ggplot(b.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100
   labs(y = "% cells")
 #plot(b.exp.p2)
 
+plot(ggarrange(b.exp.p1, b.exp.p2, nrow = 1))
+```
 
+Summarising for the T cell clonotypes:
+```{r clonal_exp_panel3, fig.height = 5, fig.width = 7, fig.align = "center"}
 t.expanded.clns.summary <- t.data %>%
   group_by(dataset, t_expanded_cln) %>%
   summarise(cell_cnt = length(barcode),
@@ -662,7 +684,7 @@ t.expanded.clns.summary <- t.data %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt),
          cln_prop = cln_cnt / sum(cln_cnt)) %>%
   ungroup()
-#t.expanded.clns.summary
+t.expanded.clns.summary %>% head()
 
 t.exp.p1 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cln_prop * 100)) +
   geom_bar(stat = "identity", position = "stack",
@@ -684,7 +706,14 @@ t.exp.p2 <- ggplot(t.expanded.clns.summary, aes(x = dataset, y = cell_prop * 100
   labs(y = "% cells")
 #plot(t.exp.p2)
 
-##stacked bar charts for the expanded clonotypes
+plot(ggarrange(t.exp.p1, t.exp.p2, nrow = 1))
+```
+
+We have the UMAP and the stacked bar plot to show the proportions of expanded and singletons, but within the expansions we want to get a visual on how many cells there are in each clone or clonotype. To do this we will make a stacked bar chart that shows the number of cells for each clone/clonotype.
+
+Starting with the B cell expanded clones:
+```{r clonal_exp_panel4, fig.height = 7, fig.width = 11, fig.align = "center"}
+##stacked bar charts for the expanded clones
 b.cln.size.summary <- seurat.data %>%
   filter(vdj_cell_type == "B") %>%
   mutate(label = ifelse(b_expanded_cln == "expanded", paste0(unq_clone_id), "singletons")) %>%
@@ -694,7 +723,7 @@ b.cln.size.summary <- seurat.data %>%
   group_by(dataset) %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt)) %>%
   ungroup()
-#b.cln.size.summary
+b.cln.size.summary %>% head()
 
 b.cln.sizes.p1 <- ggplot(b.cln.size.summary %>% filter(label != "singletons"), 
                          aes(x = dataset, y = cell_cnt, group = cell_cnt)) +
@@ -708,8 +737,12 @@ b.cln.sizes.p1 <- ggplot(b.cln.size.summary %>% filter(label != "singletons"),
   theme_x_rotated() +
   theme(legend.position = "none") +
   labs(y = "# cells")
-#plots(b.cln.sizes.p1)
+plot(b.cln.sizes.p1)
+```
 
+For the T cell expanded clonotypes:
+```{r clonal_exp_panel5, fig.height = 7, fig.width = 11, fig.align = "center"}
+##stacked bar charts for the expanded clonotypes
 t.cln.size.summary <- seurat.data %>%
   filter(vdj_cell_type == "T") %>%
   mutate(label = ifelse(t_expanded_cln == "expanded", paste0(paired_clonotype), "singletons")) %>%
@@ -719,7 +752,7 @@ t.cln.size.summary <- seurat.data %>%
   group_by(dataset) %>%
   mutate(cell_prop = cell_cnt / sum(cell_cnt)) %>%
   ungroup()
-#t.cln.size.summary
+t.cln.size.summary %>% head()
 
 t.cln.sizes.p1 <- ggplot(t.cln.size.summary %>% filter(label != "singletons"), 
                          aes(x = dataset, y = cell_cnt, group = cell_cnt)) +
@@ -733,17 +766,17 @@ t.cln.sizes.p1 <- ggplot(t.cln.size.summary %>% filter(label != "singletons"),
   theme_x_rotated() +
   theme(legend.position = "none") +
   labs(y = "# cells")
-#plot(t.cln.sizes.p1)
+plot(t.cln.sizes.p1)
+```
 
-#build into a single panel to summarise the expansions across the two datasets
+Finally, build it all into a single panel to summarise the expansions across the two datasets:
+```{r clonal_exp_panel6, fig.height = 7, fig.width = 11, fig.align = "center"}
 ## turning off the legends as will be provided by the UMAP but adding a title to each for cell type
 b.exp.panel <- ggarrange(b.exp.p1, b.exp.p2, common.legend = TRUE, legend = "none")
 b.exp.panel <- annotate_figure(b.exp.panel, top = text_grob("B cells", color = "black", face = "bold", size = 14))
-#plot(b.exp.panel)
 
 t.exp.panel <- ggarrange(t.exp.p1, t.exp.p2, common.legend = TRUE, legend = "none")
 t.exp.panel <- annotate_figure(t.exp.panel, top = text_grob("T cells", color = "black", face = "bold", size = 14))
-#plot(t.exp.panel)
 
 b.cln.sizes.p1 <- annotate_figure(b.cln.sizes.p1, top = text_grob("B expanded", color = "black", face = "bold", size = 14))
 t.cln.sizes.p1 <- annotate_figure(t.cln.sizes.p1, top = text_grob("T expanded", color = "black", face = "bold", size = 14))
