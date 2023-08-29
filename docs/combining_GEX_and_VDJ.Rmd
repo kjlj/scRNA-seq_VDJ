@@ -633,7 +633,7 @@ exp.umap.p1 <- ggplot(seurat.data, aes(x = umap_1, y = umap_2)) +
   facet_grid(dataset ~ vdj_cell_type) +
   scale_colour_npg(name = "expansions") +
   guides(colour = guide_legend(override.aes = list(size = 5)))
-#exp.umap.p1
+plot(exp.umap.p1)
 ```
 
 Next make stacked barplot to summarise the proportion of clones that are expanded for B cells in each sample, along with the % of cells that are in expansions versus singleton clones:
