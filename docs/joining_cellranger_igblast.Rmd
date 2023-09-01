@@ -14,7 +14,7 @@ For each dataset we now have the V(D)J data from `Cell Ranger` (the filtered_con
 
 These files will be combined in `R` to create a summary of the paired Ig and TR for each cell. 
 
-The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/joining_cellranger_igblast.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The R markdown script for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/joining_cellranger_igblast.Rmd) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Setting up R session
 

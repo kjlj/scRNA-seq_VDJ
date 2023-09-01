@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The VDJ is integrated to the Seurat object using the metadata slot. This permits the VDJ features to be used in plotting and other Seurat functions such as finding gene markers. 
 
-The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/combining_GEX_and_VDJ.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/combining_GEX_and_VDJ.Rmd) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## R session setup
 

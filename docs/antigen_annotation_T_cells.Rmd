@@ -14,7 +14,7 @@ We previously generated a dataset of TCR beta chain (TRB) clonotypes of known an
  
 To annotate the clonotypes from our single cell data with antigen specificity we will rely of exact matches between the clonotype labels between the datasets; using V + J + CDR3AA sequence. It is not uncommon to use only the CDR3 or junction AA sequence as an alternative 'complete' clonotype matching.
 
-The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/antigen_annotation_T_cells.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The R markdown script for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/antigen_annotation_T_cells.Rmd) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Setting up R session
 

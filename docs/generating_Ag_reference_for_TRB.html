@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-08-27" />
+<meta name="date" content="2023-09-01" />
 
 <title>Creating a reference for annotating TCR specificity</title>
 
@@ -351,7 +351,7 @@ display: none;
 
 <h1 class="title toc-ignore">Creating a reference for annotating TCR
 specificity</h1>
-<h4 class="date">2023-08-27</h4>
+<h4 class="date">2023-09-01</h4>
 
 </div>
 
@@ -363,7 +363,7 @@ to a reference database of clonotypes of known specificity. TCRs of
 known specificity will be collected from two sources and formatted for
 consistency with the clonotype labels used in our analysis of the single
 cell VDJ data.</p>
-<p>The RScript for this workflow is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/generating_Ag_reference_TRB.R">github</a>
+<p>The R markdown script for this workflow is available on <a href="https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/generating_Ag_reference_TRB.Rmd">github</a>
 in the <a href="https://github.com/kjlj/scRNA-seq_VDJ">workshop
 respository</a>.</p>
 </div>
@@ -428,11 +428,11 @@ curl -L -O https://github.com/antigenomics/vdjdb-db/releases/download/2023-06-01
 ## 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
 ## 
-  0 10.1M    0  4257    0     0   3046      0  0:58:01  0:00:01  0:58:00  3046
- 41 10.1M   41 4306k    0     0  1989k      0  0:00:05  0:00:02  0:00:03 5602k
-100 10.1M  100 10.1M    0     0  3562k      0  0:00:02  0:00:02 --:--:-- 6855k</code></pre>
+  0 10.1M    0 16384    0     0  16152      0  0:10:56  0:00:01  0:10:55 16152
+  8 10.1M    8  901k    0     0   503k      0  0:00:20  0:00:01  0:00:19 1138k
+ 81 10.1M   81 8452k    0     0  3029k      0  0:00:03  0:00:02  0:00:01 4750k
+100 10.1M  100 10.1M    0     0  3465k      0  0:00:02  0:00:02 --:--:-- 5235k</code></pre>
 <p>The database files are distributed as a zip archive, so uncompress
 it:</p>
 <pre class="bash"><code>cd tcr_ag_refs/vdjdb/
@@ -465,9 +465,20 @@ curl -O https://adaptivepublic.blob.core.windows.net/publishedproject-supplement
 ## 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
- 16 3766k   16  607k    0     0   341k      0  0:00:11  0:00:01  0:00:10  341k
- 90 3766k   90 3391k    0     0  1258k      0  0:00:02  0:00:02 --:--:-- 1258k
-100 3766k  100 3766k    0     0  1354k      0  0:00:02  0:00:02 --:--:-- 1355k</code></pre>
+  1 3766k    1 48726    0     0  43559      0  0:01:28  0:00:01  0:01:27 43661
+  5 3766k    5  191k    0     0  91325      0  0:00:42  0:00:02  0:00:40 91417
+  8 3766k    8  335k    0     0   109k      0  0:00:34  0:00:03  0:00:31  109k
+ 14 3766k   14  559k    0     0   136k      0  0:00:27  0:00:04  0:00:23  136k
+ 20 3766k   20  783k    0     0   154k      0  0:00:24  0:00:05  0:00:19  159k
+ 27 3766k   27 1039k    0     0   170k      0  0:00:22  0:00:06  0:00:16  199k
+ 35 3766k   35 1343k    0     0   188k      0  0:00:19  0:00:07  0:00:12  231k
+ 46 3766k   46 1743k    0     0   213k      0  0:00:17  0:00:08  0:00:09  277k
+ 56 3766k   56 2143k    0     0   235k      0  0:00:15  0:00:09  0:00:06  317k
+ 67 3766k   67 2559k    0     0   253k      0  0:00:14  0:00:10  0:00:04  355k
+ 78 3766k   78 2943k    0     0   265k      0  0:00:14  0:00:11  0:00:03  381k
+ 87 3766k   87 3311k    0     0   273k      0  0:00:13  0:00:12  0:00:01  394k
+ 96 3766k   96 3647k    0     0   277k      0  0:00:13  0:00:13 --:--:--  381k
+100 3766k  100 3766k    0     0   279k      0  0:00:13  0:00:13 --:--:--  369k</code></pre>
 <p>As for vdjdb, the files come in a zip archive that needs to be
 ‘unzipped’, but we also need to move the files out of the sub-directory
 they uncompress to:</p>

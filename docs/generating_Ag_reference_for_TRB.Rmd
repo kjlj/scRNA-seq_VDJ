@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The epitope specificity of T cells may be inferred by matching TCRs to a reference database of clonotypes of known specificity. TCRs of known specificity will be collected from two sources and formatted for consistency with the clonotype labels used in our analysis of the single cell VDJ data.
 
-The RScript for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/generating_Ag_reference_TRB.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The R markdown script for this workflow is available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/generating_Ag_reference_TRB.Rmd) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 ## Setting up R session
 

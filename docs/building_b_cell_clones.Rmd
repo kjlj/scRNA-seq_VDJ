@@ -22,7 +22,7 @@ In the example datasets the PMBC and tumour samples are from different individua
 
 An excellent resource for post-processing of 10x data including building clonal relationships can be found at on the [Immcantation framework site](https://immcantation.readthedocs.io/en/stable/tutorials/10x_tutorial.html). It provides an approach that can be undertaken in R. You can use alternative tools such as [cd-hit](https://github.com/weizhongli/cdhit) outside of R but this requires some additional coding to wrangle the `cd-hit` output into a format that can be joined to the `Cell Ranger` and `IgBLAST` cell barcode level information. 
 
-The RScript for this workflow available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/RScripts/building_b_cell_clones.R) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
+The R markdown script for this workflow available on [github](https://raw.githubusercontent.com/kjlj/scRNA-seq_VDJ/main/docs/building_b_cell_clones.Rmd) in the [workshop respository](https://github.com/kjlj/scRNA-seq_VDJ).
 
 Here, we build upon the Ig data generated from the [combining IgBLAST and cellranger workflow](https://kjlj.github.io/scRNA-seq_VDJ/docs/joining_cellranger_igblast.html). 
 
