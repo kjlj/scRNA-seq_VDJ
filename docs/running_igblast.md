@@ -22,7 +22,7 @@ export IGDATA=~/data/apps/ncbi-igblast-1.21.0/
     -germline_db_D ~/data/apps/ncbi-igblast-1.21.0/references/imgt_ig_d_human.fa \
     -germline_db_J ~/data/apps/ncbi-igblast-1.21.0/references/imgt_ig_j_human.fa \
     -c_region_db ~/data/apps/ncbi-igblast-1.21.0/references/ncbi_human_c_genes \
-    -auxiliary_data ~/data/apps/ncbi-igblast-1.19.0/optional_file/human_gl.aux \
+    -auxiliary_data ~/data/apps/ncbi-igblast-1.21.0/optional_file/human_gl.aux \
     -domain_system imgt -ig_seqtype Ig -organism human \
     -outfmt 19 \
     -query sc5p_v2_hs_PBMC_10k_b_filtered_contig.fasta \
@@ -35,7 +35,7 @@ cd ~/data/scRNA-seq_workshop/tumour/
     -germline_db_D ~/data/apps/ncbi-igblast-1.21.0/references/imgt_ig_d_human.fa \
     -germline_db_J ~/data/apps/ncbi-igblast-1.21.0/references/imgt_ig_j_human.fa \
     -c_region_db ~/data/apps/ncbi-igblast-1.21.0/references/ncbi_human_c_genes \
-    -auxiliary_data ~/data/apps/ncbi-igblast-1.19.0/optional_file/human_gl.aux \
+    -auxiliary_data ~/data/apps/ncbi-igblast-1.21.0/optional_file/human_gl.aux \
     -domain_system imgt -ig_seqtype Ig -organism human \
     -outfmt 19 \
     -query sc5p_v2_hs_melanoma_10k_b_filtered_contig.fasta \
@@ -59,7 +59,7 @@ export IGDATA=~/data/apps/ncbi-igblast-1.21.0/
     -germline_db_D ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_d_human.fa \
     -germline_db_J ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_j_human.fa \
     -c_region_db ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_c_human.fa \
-    -auxiliary_data ~/data/apps/ncbi-igblast-1.19.0/optional_file/human_gl.aux \
+    -auxiliary_data ~/data/apps/ncbi-igblast-1.21.0/optional_file/human_gl.aux \
     -domain_system imgt -ig_seqtype TCR -organism human \
     -outfmt 19 \
     -query sc5p_v2_hs_PBMC_10k_t_filtered_contig.fasta \
@@ -75,7 +75,7 @@ cd ~/data/scRNA-seq_workshop/tumour/
     -germline_db_D ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_d_human.fa \
     -germline_db_J ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_j_human.fa \
     -c_region_db ~/data/apps/ncbi-igblast-1.21.0/references/imgt_tr_c_human.fa \
-    -auxiliary_data ~/data/apps/ncbi-igblast-1.19.0/optional_file/human_gl.aux \
+    -auxiliary_data ~/data/apps/ncbi-igblast-1.21.0/optional_file/human_gl.aux \
     -domain_system imgt -ig_seqtype TCR -organism human \
     -outfmt 19 \
     -query sc5p_v2_hs_melanoma_10k_t_filtered_contig.fasta \
